@@ -126,13 +126,17 @@ function renderList() {
       <div class="file-name" title="${esc(r.file)}">${esc(r.file.split("/").pop()!)}${r.role === "library" ? ' <span class="lib">imported</span>' : ""}</div>
       <div class="file-sum">${esc(r.summary)}</div>
     </div>`).join("") || `<div class="dim small" style="padding:16px">no files match</div>`;
-  $("#files").querySelectorAll(".file").forEach((el) => el.addEventListener("click", () => select((el as HTMLElement).dataset.file!)));
+  $("#files").querySelectorAll(".file").forEach((el) => el.addEventListener("click", () => select((el as HTMLElement).dataset.file!, true)));
   document.querySelectorAll("#filters button").forEach((b) => b.classList.toggle("on", (b as HTMLElement).dataset.f === filter));
 }
 
-function select(file: string) {
+function isMobile() { return window.matchMedia("(max-width: 760px)").matches; }
+function setPane(p: string) { $("#main").dataset.pane = p; document.querySelectorAll("#mtabs button").forEach((b) => b.classList.toggle("on", (b as HTMLElement).dataset.pane === p)); if (p === "src") renderVisible(); }
+
+function select(file: string, fromUser = false) {
   selected = file;
   renderList();
+  if (fromUser && isMobile()) setPane("detail");
   const r = reports.find((x) => x.file === file)!;
   const shown = r.findings.filter((f) => f.severity !== "info");
   const info = r.findings.filter((f) => f.severity === "info");
@@ -148,7 +152,7 @@ function select(file: string) {
     ${info.length ? `<div class="dim small" style="margin-top:12px">${info.map((f) => esc(f.title)).join(" · ")}</div>` : ""}
   `;
   $("#detail").scrollTop = 0;
-  $("#detail").querySelectorAll("[data-jump]").forEach((el) => el.addEventListener("click", () => { const [f, l] = (el as HTMLElement).dataset.jump!.split("::"); showSource(f, Number(l)); }));
+  $("#detail").querySelectorAll("[data-jump]").forEach((el) => el.addEventListener("click", () => { const [f, l] = (el as HTMLElement).dataset.jump!.split("::"); if (isMobile()) setPane("src"); showSource(f, Number(l)); }));
   const marks = new Map<string, string>();
   for (const f of shown) { marks.set(`${f.location.file}::${f.location.line}`, f.severity); for (const rel of f.related ?? []) marks.set(`${rel.file}::${rel.line}`, "related"); }
   showSource(r.file, shown[0]?.location.line ?? 1, marks);
@@ -235,6 +239,7 @@ function init() {
   $("#reset").addEventListener("click", () => show("landing"));
   $("#search").addEventListener("input", renderList);
   document.querySelectorAll("#filters button").forEach((b) => b.addEventListener("click", () => { filter = (b as HTMLElement).dataset.f!; renderList(); }));
+  document.querySelectorAll("#mtabs button").forEach((b) => b.addEventListener("click", () => setPane((b as HTMLElement).dataset.pane!)));
   $("#src").addEventListener("scroll", () => requestAnimationFrame(renderVisible));
   window.addEventListener("resize", () => renderVisible());
   show("landing");
