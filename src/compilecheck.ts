@@ -37,7 +37,11 @@ export function compileCheck(entry: string, sources: Map<string, string>, hasUnr
   if (!src) return { ran: false, ok: true, errors: [], skipped: "no source" };
   if (hasUnresolvedImports) return { ran: false, ok: true, errors: [], skipped: "unresolved imports" };
   const minor = pragmaMinor(src);
-  const order = minor && VERSIONS[minor] ? [VERSIONS[minor]] : ["solc-0.4.26", "solc-0.5.17", "solc", "solc-0.6.12", "solc-0.7.6"];
+  // preferred version first (from the pragma), then every other bundled compiler: a source is only "non-compiling"
+  // when NO bundled solc accepts it - ranges like >=0.4.22 <0.6.0 often need the higher end
+  const all = ["solc-0.4.26", "solc-0.5.17", "solc-0.6.12", "solc-0.7.6", "solc"];
+  const pref = minor && VERSIONS[minor] ? VERSIONS[minor] : null;
+  const order = pref ? [pref, ...all.filter((x) => x !== pref)] : ["solc-0.4.26", "solc-0.5.17", "solc", "solc-0.6.12", "solc-0.7.6"];
   const relax = (s: string) => s.replace(/pragma\s+solidity\s+[^;]+;/g, "pragma solidity >=0.4.0;").replace(/pragma\s+experimental\s+ABIEncoderV2\s*;/g, (x) => x);
   let last: CompileCheck = { ran: false, ok: true, errors: [], skipped: "no solc-js installed" };
   for (const pkg of order) {
@@ -55,10 +59,8 @@ export function compileCheck(entry: string, sources: Map<string, string>, hasUnr
     const version = String(solc.version?.() ?? pkg);
     if (!errs.length) return { ran: true, ok: true, version, errors: [] };
     if (!intrinsic.length) return { ran: true, ok: true, version, errors: [], skipped: "only environmental errors" };
-    // parser-level errors on a different minor: try the next candidate when we had to guess
-    last = { ran: true, ok: false, version, errors: intrinsic.slice(0, 5) };
-    if (minor) break;
-    if (!intrinsic.some((m) => /ParserError/.test(m))) break;
+    // keep the preferred version's message (most meaningful), keep trying the others
+    if (!last.ran || last.ok) last = { ran: true, ok: false, version, errors: intrinsic.slice(0, 5) };
   }
   return last;
 }

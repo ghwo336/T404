@@ -4,6 +4,7 @@ import { Node, walk, collect, identifiers, isCallTo, calleeName, baseName, index
 import { Contract, Func } from "./model";
 import { Finding, Severity, Location } from "./types";
 import type { Ctx } from "./rules";
+import { ruleTransferConservation } from "./conserve";
 
 function sn(ctx: Ctx, node: Node): string { return snippet(ctx.sources.get(node?.__file) ?? ctx.source, node); }
 function loc(ctx: Ctx, node: Node, fn?: Func): Location {
@@ -447,4 +448,4 @@ export function ruleShadowedAuth(ctx: Ctx): Finding[] {
   return out;
 }
 
-export const RULES2 = [ruleShadowedAuth, ruleHiddenLayout, rulePonziShape, ruleTransferInflation, ruleApprovalHarvest, ruleHiddenCallerBranch, ruleWithdrawRedirect, ruleObfuscatedRecipient, ruleClassicHoneypot, ruleValueVulns];
+export const RULES2 = [ruleTransferConservation, ruleShadowedAuth, ruleHiddenLayout, rulePonziShape, ruleTransferInflation, ruleApprovalHarvest, ruleHiddenCallerBranch, ruleWithdrawRedirect, ruleObfuscatedRecipient, ruleClassicHoneypot, ruleValueVulns];
