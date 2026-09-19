@@ -205,6 +205,45 @@ export function attackPath(f: Finding): string[] | undefined {
         "The base modifier that guards withdrawals binds to the original slot, which the new 'owner' never touched.",
         "Result: victims who pay to take control gain a variable that nothing reads; the deployer still passes every onlyOwner check and sweeps the pool.",
       ];
+    case "CANNOT_SELL_ALL":
+      return [
+        "Victim buys; partial sells work, so simulators and 'sell test' bots report the token as sellable.",
+        `Victim tries to sell everything: ${L(at)}: \`${at.snippet}\` rejects any amount equal to the full balance.`,
+        "Wallets that 'sell max' revert; the holder must leave dust behind every time, and the last unit can never leave.",
+        "Result: a permanent floor of trapped tokens per wallet - small per victim, large across thousands.",
+      ];
+    case "COOLDOWN_GATE":
+      return [
+        "Launch with a short per-address cooldown that looks like sniper protection.",
+        `${setter ? `Owner calls ${setter} with a huge value - the setter has no cap.` : "The cooldown applies to holders but not to the owner / exempt addresses."}`,
+        `Every ${/sell/i.test(f.title) ? "sell" : "transfer"} now fails at ${L(at)}: \`${at.snippet}\` until the timestamp passes.`,
+        "Result: holders are throttled or frozen while the deployer trades freely.",
+      ];
+    case "BUY_BLOCK":
+      return [`${setter ? `Owner flips the switch via ${setter}.` : "A privileged switch controls buys."}`, `Transfers whose sender is the pair now revert at ${L(at)}: \`${at.snippet}\`.`, "Result: the owner decides when the market is open; combined with other gates this becomes a one-way market."];
+    case "EOA_ONLY_GATE":
+      return [
+        "Victim buys on the DEX (the pair is the msg.sender of that transfer; buys may be exempted so they succeed).",
+        `Victim sells through the router: the router is a contract, so ${L(at)}: \`${at.snippet}\` reverts.`,
+        "The check reads like anti-bot protection; wallet-to-wallet transfers still work, so the token 'transfers fine'.",
+        "Result: nobody can exit through the pool except exempt addresses.",
+      ];
+    case "PERSONAL_FEE":
+      return [
+        "Token launches with an advertised global fee; scanners read it and pass.",
+        `Owner calls ${fnOf(at)} [${L(at)}] with a victim's address and a fee near 100 %.`,
+        "Only that address is taxed on the transfer path; everyone else - and every scanner - sees the normal rate.",
+        "Result: targeted confiscation on exit, invisible until the victim sells.",
+      ];
+    case "PHANTOM_TRANSFER":
+      return [
+        `Caller invokes ${fnOf(at)}; ${L(at)}: \`${at.snippet}\` fires and the call returns true.`,
+        "No balance mapping is written by the function or anything it calls.",
+        "Explorers, wallets and indexers show a completed transfer; balanceOf() never changes.",
+        "Result: tokens cannot actually move - every 'trade' on record is fiction.",
+      ];
+    case "GAS_ABUSE":
+      return [`Every transfer runs ${L(at)}: \`${at.snippet}\`.`, "The holder pays gas for contract creation / gas-token calls that have nothing to do with moving a balance.", "Result: value extracted from users as gas on every interaction, accruing to the deployer."];
     default:
       return undefined;
   }

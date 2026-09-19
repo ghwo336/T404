@@ -153,9 +153,9 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 50,
+    "score": 84,
     "note": "",
-    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
+    "top": "BALANCE_MANIPULATION,PERSONAL_FEE",
     "parseErrors": 0
   },
   {
@@ -332,10 +332,10 @@
     "address": "0xf4134146af2d511dd5ea8cdb1c4ac88c57d60404",
     "label": "Malicious",
     "category": "GenerateToken",
-    "verdict": "Benign",
-    "score": 4,
+    "verdict": "Uncertain",
+    "score": 25,
     "note": "",
-    "top": "EXIT_TIME_GATE,EXIT_TIME_GATE",
+    "top": "CANNOT_SELL_ALL,CANNOT_SELL_ALL",
     "parseErrors": 0
   },
   {
@@ -473,9 +473,9 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 98,
+    "score": 100,
     "note": "",
-    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "top": "EOA_ONLY_GATE,EXTERNAL_TRANSFER_HOOK",
     "parseErrors": 0
   },
   {
@@ -502,10 +502,10 @@
     "address": "0x814f67fa286f7572b041d041b1d99b432c9155ee",
     "label": "Malicious",
     "category": "DestoryToken",
-    "verdict": "Benign",
-    "score": 0,
+    "verdict": "Uncertain",
+    "score": 14,
     "note": "",
-    "top": "",
+    "top": "CANNOT_SELL_ALL,CANNOT_SELL_ALL",
     "parseErrors": 0
   },
   {
@@ -543,9 +543,9 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 42,
+    "score": 63,
     "note": "",
-    "top": "BALANCE_MANIPULATION",
+    "top": "BALANCE_MANIPULATION,CANNOT_SELL_ALL",
     "parseErrors": 0
   },
   {
@@ -553,9 +553,9 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 89,
+    "score": 100,
     "note": "",
-    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "top": "EOA_ONLY_GATE,EXTERNAL_TRANSFER_HOOK",
     "parseErrors": 0
   },
   {
@@ -593,9 +593,9 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 91,
+    "score": 100,
     "note": "",
-    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "top": "EOA_ONLY_GATE,EXTERNAL_TRANSFER_HOOK",
     "parseErrors": 0
   },
   {
@@ -1253,7 +1253,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 84,
+    "score": 92,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1963,9 +1963,9 @@
     "label": "Benign",
     "category": "PEPE",
     "verdict": "Malicious",
-    "score": 44,
+    "score": 46,
     "note": "",
-    "top": "BLACKLIST_GATE,OWNER_LIMIT_TO_ZERO",
+    "top": "BLACKLIST_GATE,BUY_BLOCK",
     "parseErrors": 0
   },
   {

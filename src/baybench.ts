@@ -58,6 +58,13 @@ const MAP: Record<string, Cat> = {
   PONZI_SHAPE: { id: "PONZI_SHAPE", family: "G" },
   HIDDEN_CODE_LAYOUT: { id: "HONEYPOT_LEGACY", family: "F" },
   PREEMPTIVE_DRAIN: { id: "HONEYPOT_LEGACY", family: "F" },
+  CANNOT_SELL_ALL: { id: "EXIT_AMOUNT_LIMIT", family: "A" },
+  COOLDOWN_GATE: { id: "EXIT_TIME_GATE", family: "A" },
+  BUY_BLOCK: { id: "EXIT_GLOBAL_SWITCH", family: "A" },
+  EOA_ONLY_GATE: { id: "EXIT_SELL_ONLY", family: "A" },
+  PERSONAL_FEE: { id: "FEE_UNBOUNDED", family: "A" },
+  PHANTOM_TRANSFER: { id: "BAL_TRANSFER_HIDDEN_MINT", family: "B" },
+  GAS_ABUSE: { id: "HONEYPOT_LEGACY", family: "F" },
   UNRESOLVED_BASE: { id: "STRUCT_EXTERNAL_GATE", family: "E" },
 };
 

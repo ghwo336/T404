@@ -2,6 +2,7 @@ import { Node, walk, collect, baseName, identifiers, isCallTo, calleeName, numbe
 import { Contract, Func, Assign, PAIR_NAME } from "./model";
 import { Finding, Severity, Location } from "./types";
 import { RULES2 } from "./rules2";
+import { RULES3 } from "./rules3";
 
 export interface Ctx {
   file: string; // entry file being judged
@@ -15,9 +16,9 @@ function sn(ctx: Ctx, node: Node): string {
   return snippet(ctx.sources.get(node?.__file) ?? ctx.source, node);
 }
 
-const TO_NAMES = /^(to|_to|recipient|_recipient|dst|receiver|target|_receiver)$/i;
-const FROM_NAMES = /^(from|_from|sender|_sender|src|owner_|holder)$/i;
-const AMOUNT_NAMES = /^(amount|_amount|value|_value|tAmount|amt|tokens|quantity)$/i;
+export const TO_NAMES = /^(to|_to|recipient|_recipient|dst|receiver|target|_receiver)$/i;
+export const FROM_NAMES = /^(from|_from|sender|_sender|src|owner_|holder)$/i;
+export const AMOUNT_NAMES = /^(amount|_amount|value|_value|tAmount|amt|tokens|quantity)$/i;
 const EXEMPT_NAME = /(exclud|exempt|whitelist|isFeeExempt|isTxLimitExempt|noFee|isVIP|allowed|authorized|privileged)/i;
 const BLACKLIST_NAME = /(blacklist|blocklist|blocked|banned|bots?$|isBot|_isBot|sniper|frozen|freeze|restricted|denylist|cannotSell|canSell|isBlack|locked|jail)/i;
 const FEE_NAME = /(fee|tax|rate|percent|pct|bps|burn|liquidity|marketing|dev|reflect|charity|team|slippage|cut|commission)/i;
@@ -46,10 +47,10 @@ function hasRevert(body: Node): boolean {
     || (x.type === "ReturnStatement" && x.expression?.type === "BooleanLiteral" && x.expression.value === false)).length > 0; // `return false` = silent block (pre-0.4.22 style)
 }
 
-interface Gate { fn: Func; node: Node; cond: Node; kind: "require" | "if-revert" | "if"; body?: Node; enclosing: Node[] }
+export interface Gate { fn: Func; node: Node; cond: Node; kind: "require" | "if-revert" | "if"; body?: Node; enclosing: Node[] }
 
 /** All guards in the transfer path: require(cond), if(cond) revert, plain if(cond){...} */
-function transferGates(c: Contract): Gate[] {
+export function transferGates(c: Contract): Gate[] {
   const out: Gate[] = [];
   for (const fname of c.transferPath) {
     const f = c.functions.get(fname);
@@ -78,7 +79,7 @@ function transferGates(c: Contract): Gate[] {
   return out;
 }
 
-function refsPair(c: Contract, expr: Node): boolean {
+export function refsPair(c: Contract, expr: Node): boolean {
   const ids = identifiers(expr);
   if (ids.some((i) => c.pairVars.has(i) || c.pairMaps.has(i))) return true;
   let found = false;
@@ -90,17 +91,17 @@ function refsPair(c: Contract, expr: Node): boolean {
   return found;
 }
 
-function paramNamed(f: Func, re: RegExp, pos: number): string | null {
+export function paramNamed(f: Func, re: RegExp, pos: number): string | null {
   const byName = f.params.find((p) => re.test(p));
   if (byName) return byName;
   return f.params[pos] ?? null;
 }
 
-function refsIdent(expr: Node, name: string | null): boolean {
+export function refsIdent(expr: Node, name: string | null): boolean {
   return !!name && identifiers(expr).includes(name);
 }
 
-function refsExemption(c: Contract, expr: Node): boolean {
+export function refsExemption(c: Contract, expr: Node): boolean {
   const ids = identifiers(expr);
   if (ids.some((i) => c.ownerVars.has(i))) return true;
   if (ids.some((i) => (EXEMPT_NAME.test(i) && c.stateVars.has(i)) || c.exemptMaps.has(i))) return true;
@@ -114,7 +115,7 @@ function refsExemption(c: Contract, expr: Node): boolean {
 }
 
 /** Is a state var written by a privileged, non-constructor function with a value derived from a parameter or a literal? */
-function privilegedSetters(c: Contract, varName: string): { fn: Func; w: Assign }[] {
+export function privilegedSetters(c: Contract, varName: string): { fn: Func; w: Assign }[] {
   const out: { fn: Func; w: Assign }[] = [];
   for (const f of c.functions.values()) {
     if (!f.privileged || f.isConstructor || c.transferPath.has(f.name)) continue;
@@ -133,7 +134,7 @@ function unprivilegedPublicWriters(c: Contract, varName: string): { fn: Func; w:
   return out;
 }
 
-function valueFromParam(f: Func, w: Assign): boolean {
+export function valueFromParam(f: Func, w: Assign): boolean {
   if (!w.value) return w.operator === "++" || w.operator === "--";
   const ids = identifiers(w.value);
   return ids.some((i) => f.params.includes(i));
@@ -160,7 +161,7 @@ function resolveNum(c: Contract, n: Node): number | null {
   return null;
 }
 
-function upperBound(c: Contract, f: Func, names: string[]): number | null | "unbounded" {
+export function upperBound(c: Contract, f: Func, names: string[]): number | null | "unbounded" {
   let bound: number | null = null;
   let any = false;
   walk(f.node.body, (n) => {
@@ -214,7 +215,7 @@ function feeDenominator(c: Contract): number | null {
 }
 
 /** State vars that feed the transfer arithmetic, directly or via a local (`uint f = sellFee; amount * f / 100`). */
-function feeStateVars(c: Contract): Set<string> {
+export function feeStateVars(c: Contract): Set<string> {
   const direct = new Set<string>();
   const localFrom = new Map<string, Set<string>>(); // local -> state vars assigned into it
   const arithLocals = new Set<string>();
@@ -277,12 +278,12 @@ function sellBranchAssigned(c: Contract): Set<string> {
   return out;
 }
 
-function inSellBranch(c: Contract, gate: Gate): boolean {
+export function inSellBranch(c: Contract, gate: Gate): boolean {
   if (sellCond(c, gate.fn, gate.cond)) return true;
   return gate.enclosing.some((e) => sellCond(c, gate.fn, e));
 }
 
-function sellCond(c: Contract, fn: Func, cond: Node): boolean {
+export function sellCond(c: Contract, fn: Func, cond: Node): boolean {
   const to = paramNamed(fn, TO_NAMES, 1);
   const from = paramNamed(fn, FROM_NAMES, 0);
   if (!refsPair(c, cond)) return false;
@@ -1155,6 +1156,7 @@ export const RULES: ((ctx: Ctx) => Finding[])[] = [
   ruleHiddenWithdraw,
   ruleMisc,
   ...RULES2,
+  ...RULES3,
 ];
 
 export function runRules(ctx: Ctx): Finding[] {
