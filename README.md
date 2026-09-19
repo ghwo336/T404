@@ -191,6 +191,10 @@ $ npm test
 61 passed, 0 failed
 ```
 
+## Compile confirmation (optional, offline)
+
+Analysis never needs a compiler. Separately, before a verdict is issued, noexit asks whether the source *could compile at all*: a cheap AST pass (`src/deployable.ts`: identifiers declared nowhere, duplicate state variables) and, when the optional `solc-js` packages are installed (`optionalDependencies`: 0.4.26 / 0.5.17 / 0.6.12 / 0.7.6 / 0.8.x — pure wasm, no network, picked by the file's pragma), a real compile with the pragma relaxed. Errors intrinsic to the source (undeclared identifier, type error, bad checksum, duplicate declaration) make the verdict `Uncertain` with the compiler message as the reason, findings still attached. Missing imports and unknown base contracts are **not** treated as compile failures — a file submitted without its dependencies is analysed exactly as before. `NOEXIT_NO_SOLC=1` disables the solc pass. This matters on paper corpora (Pied-Piper's *injected* fixtures, partially flattened CRPWarner files) where a third of the "malicious" sources never compiled; a judgement on code that cannot be deployed is a guess, and noexit says so.
+
 ## Team harness (BAYBENCH)
 
 `npm run baybench -- <input-dir> <out>/results.json` emits the `results.json` shape of the team's [BAYBENCH](https://github.com/sdh2222/trust404) harness, mapping noexit rule ids onto the §7 catalog (`EXIT_ADDR_GATE`, `BAL_PRIV_MINT`, `HONEYPOT_LEGACY`, …) with families A–G and HIGH/MED/INFO severities. Register it in `baybench/tools.yaml`:
@@ -200,7 +204,7 @@ $ npm test
     cmd: "node /path/to/noexit/dist/baybench.js {input} {output}/results.json"
 ```
 
-Current standing on that harness (verdict score, `bench run noexit --no-docker`): tier1_pairs 0.90 (61 cases; the remaining gaps are policy — the harness labels symmetric pause/limit/time-gate traps `Malicious` and role-gated blacklists with OpenZeppelin `AccessControl` `Benign`, whereas noexit follows the track's own boundary rules 1 and 4), tier2_realworld 473/529 labeled-malicious CRPWarner + HoneyBadger + Pied-Piper contracts flagged (89 %; a further 162 of the 250 "non-compiling fixture" files, which the harness expects as `Uncertain`, are still judged `Malicious` because noexit never needs solc), tier3_benign_risky 6/8 (the two "misses" are Bancor SmartToken and Lido's MiniMe — uncapped controller minting, which the track's rule 2 classifies as `MALICIOUS`).
+Current standing on that harness (verdict score, `bench run noexit --no-docker`): tier1_pairs 0.90 (61 cases; the remaining gaps are policy — the harness labels symmetric pause/limit/time-gate traps `Malicious` and role-gated blacklists with OpenZeppelin `AccessControl` `Benign`, whereas noexit follows the track's own boundary rules 1 and 4), tier2_realworld **0.83** — 473/529 labeled-malicious CRPWarner + HoneyBadger + Pied-Piper contracts flagged (89 %), and 175 of the 250 "non-compiling fixture" files returned as `Uncertain` by the compile confirmation above, tier3_benign_risky 6/8 (the two "misses" are Bancor SmartToken and Lido's MiniMe — uncapped controller minting, which the track's rule 2 classifies as `MALICIOUS`).
 
 ## Real-world benchmark
 

