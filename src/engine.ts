@@ -4,6 +4,7 @@ import { Node, walk } from "./ast";
 import { buildModels, mainContracts, Contract } from "./model";
 import { runRules } from "./rules";
 import { attackPath, checklist } from "./explain";
+import { deployable } from "./deployable";
 import { Finding, FileReport, Verdict, ContractReport, Severity } from "./types";
 
 export const VERSION = "0.1.0";
@@ -126,6 +127,9 @@ export function analyze(entry: string, sources: Map<string, string>, cache?: Map
   all.sort(bySeverity);
   const v = verdictFor(all);
   if (v.verdict === "Benign" && parseErrors.length) { v.verdict = "Uncertain"; v.summary = `Could not fully parse the file (${parseErrors[0]}); no verdict.`; }
+  const allC = new Map<string, any>(); for (const p of closure) for (const ch of p.ast?.children ?? []) if (ch?.type === "ContractDefinition") allC.set(ch.name, ch);
+  const dep = deployable(e.ast, allC, unresolved.length > 0);
+  if (!dep.ok) { parseErrors.push(...dep.reasons.map((r) => `compile: ${r}`)); v.verdict = "Uncertain"; v.summary = `Source cannot compile (${dep.reasons[0]}), so it cannot be deployed as written; ${all.length ? `${all.length} finding(s) noted but not judged` : "no verdict"}.`; }
   return { file: entry, verdict: v.verdict, score: v.score, parseErrors, imports: { resolved: closure.slice(1).map((p) => p.file), unresolved }, contracts, findings: all, summary: targets.length ? v.summary : "No deployable contract in this file (interfaces / libraries / abstract only)." };
 }
 

@@ -4,6 +4,7 @@ import { Resolver } from "./resolve";
 import { buildModels, mainContracts, Contract } from "./model";
 import { runRules } from "./rules";
 import { attackPath, checklist } from "./explain";
+import { deployable } from "./deployable";
 import { Finding, FileReport, ScanReport, ContractReport } from "./types";
 
 export { VERSION, verdictFor, bySeverity } from "./engine";
@@ -61,6 +62,9 @@ export function scanFile(file: string, resolver?: Resolver, sink?: { contracts: 
   all.sort(bySeverity);
   const v = verdictFor(all);
   if (v.verdict === "Benign" && parseErrors.length) { v.verdict = "Uncertain"; v.summary = `Could not fully parse the file (${parseErrors[0]}); no verdict.`; }
+  const allC = new Map<string, any>(); for (const pf of closure) for (const ch of pf.ast?.children ?? []) if (ch?.type === "ContractDefinition") allC.set(ch.name, ch);
+  const dep = deployable(entry.ast, allC, unresolvedImports.length > 0);
+  if (!dep.ok) { parseErrors.push(...dep.reasons.map((r) => `compile: ${r}`)); v.verdict = "Uncertain"; v.summary = `Source cannot compile (${dep.reasons[0]}), so it cannot be deployed as written; ${all.length ? `${all.length} finding(s) noted but not judged` : "no verdict"}.`; }
   const summary = targets.length ? v.summary : "No deployable contract in this file (interfaces / libraries / abstract only).";
   return {
     file, verdict: v.verdict, score: v.score, parseErrors,
