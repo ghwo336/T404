@@ -386,7 +386,18 @@ export function ruleBlacklistGate(ctx: Ctx): Finding[] {
       });
       return restrict || (BLACKLIST_NAME.test(v.name) && !EXEMPT_NAME.test(v.name));
     });
-    if (!asRestriction) continue;
+    // allow-list form: require(allowed[x]) as the whole condition or one side of &&, i.e. everyone NOT on the list is blocked
+    const asAllowlist = !asRestriction && readInGate.some((g) => {
+      if (g.kind !== "require") return false;
+      const isM = (n: Node) => (n?.type === "IndexAccess" && baseName(n.base) === v.name) || (n?.type === "BinaryOperation" && n.operator === "==" && n.right?.type === "BooleanLiteral" && n.right.value && baseName(n.left) === v.name);
+      if (isM(g.cond)) return true;
+      if (g.cond?.type === "BinaryOperation" && g.cond.operator === "&&") {
+        const parts: Node[] = []; const flat = (n: Node) => { if (n?.type === "BinaryOperation" && n.operator === "&&") { flat(n.left); flat(n.right); } else parts.push(n); }; flat(g.cond);
+        return parts.some(isM);
+      }
+      return false;
+    });
+    if (!asRestriction && !asAllowlist) continue;
     const setters = privilegedSetters(c, v.name).filter(({ fn, w }) => valueFromParam(fn, w) || assignsLiteral(w, true));
     const openSetters = unprivilegedPublicWriters(c, v.name);
     const gate = readInGate[0];
@@ -394,6 +405,12 @@ export function ruleBlacklistGate(ctx: Ctx): Finding[] {
     if (setters.length) {
       const s = setters[0];
       const arbitrary = s.fn.params.length > 0 && identifiers(s.w.target).some((i) => s.fn.params.includes(i));
+      if (asAllowlist) {
+        out.push(mk(ctx, "ALLOWLIST_GATE", `Only owner-approved addresses can ${sellOnly ? "sell" : "transfer"}`, "critical", /whitelist|allow|approved|permitted|canTransfer|authorized/i.test(v.name) ? 0.95 : 0.85, gate.node, gate.fn,
+          `${sn(ctx, gate.cond)}  |  ${v.name} is written in ${s.fn.name}() [${s.fn.privilegeReason}]`,
+          `The transfer path requires ${v.name}[sender] to be true, and only a privileged function can set it. Every holder who is not on the list (i.e. everyone the owner has not approved) cannot move the tokens they received. The owner ${c.exemptMaps.has(v.name) ? "puts itself on the list in the constructor, so the restriction is asymmetric: " : ""}decides who may exit - a honeypot by permission.`,
+          [loc(ctx, s.w.node, s.fn)]));
+      } else
       out.push(mk(ctx, "BLACKLIST_GATE", `Owner-controlled address blacklist blocks ${sellOnly ? "selling" : "transfers"}`, arbitrary ? "critical" : "high", BLACKLIST_NAME.test(v.name) ? 0.95 : 0.8, gate.node, gate.fn,
         `${sn(ctx, gate.cond)}  |  ${v.name} is written in ${s.fn.name}() [${s.fn.privilegeReason}]`,
         `The transfer path refuses when ${v.name}[addr] is set, and a privileged function can set it for ${arbitrary ? "any address passed as a parameter" : "addresses"} at any time. The owner can therefore freeze any holder's tokens after they buy - a targeted honeypot / rug mechanism that never shows up on-chain until the victim tries to sell.`,
@@ -439,8 +456,13 @@ export function ruleTradingGate(ctx: Ctx): Finding[] {
         `${sn(ctx, gate.cond)}  |  ${v.name} toggled by ${setters.map((x) => x.fn.name + "()").join(", ")}`,
         `OpenZeppelin-style Pausable: transfers stop while paused. This is a well-known centralisation control rather than a hidden trap, but holders depend on the pauser to unpause.`,
         [loc(ctx, setters[0].w.node, setters[0].fn)]));
+    } else if (canDisable && !sellOnly && !refsExemption(c, gate.cond) && !gate.enclosing.some((e) => refsExemption(c, e))) {
+      out.push(mk(ctx, "TRADING_GATE", "Owner can pause all transfers (applies to the owner too)", "low", 0.8, gate.node, gate.fn,
+        `${sn(ctx, gate.cond)}  |  ${v.name} set in ${setters[0].fn.name}() [${setters[0].fn.privilegeReason}]`,
+        `A privileged function can halt transfers, but the check is symmetric: nothing exempts the owner or a whitelist, so no asset moves to the owner's side. Availability / centralisation risk, not a theft path.`,
+        [loc(ctx, setters[0].w.node, setters[0].fn)]));
     } else if (canDisable) {
-      out.push(mk(ctx, "TRADING_GATE", sellOnly ? "Owner can switch selling off at any time" : "Owner can pause all transfers at any time", sellOnly ? "critical" : "high", 0.8, gate.node, gate.fn,
+      out.push(mk(ctx, "TRADING_GATE", sellOnly ? "Owner can switch selling off at any time" : "Owner can pause transfers while exempting itself", "critical", 0.85, gate.node, gate.fn,
         `${sn(ctx, gate.cond)}  |  ${v.name} set in ${setters[0].fn.name}() [${setters[0].fn.privilegeReason}]`,
         `The transfer path requires ${v.name}, and a privileged function can flip it back to false. ${sellOnly ? "Because the check only applies to transfers into the pair, buys keep working while sells are halted - a switchable honeypot." : "Holders can be locked in indefinitely."}`,
         [loc(ctx, setters[0].w.node, setters[0].fn)]));
@@ -542,7 +564,7 @@ export function ruleHiddenMint(ctx: Ctx): Finding[] {
       continue;
     }
     if (f.privileged) {
-      out.push(mk(ctx, "HIDDEN_MINT", named ? "Owner can mint unlimited supply" : `Supply inflation hidden in '${f.name}()'`, named ? "medium" : "critical", named ? 0.8 : 0.8, m.node, f,
+      out.push(mk(ctx, "HIDDEN_MINT", named ? `Owner can mint unlimited supply via '${f.name}()' (no cap check)` : `Supply inflation hidden in '${f.name}()'`, "critical", named ? 0.8 : 0.85, m.node, f,
         `${sn(ctx, m.node)} in ${f.name}() [${f.privilegeReason}]`,
         named ? `A privileged function mints new tokens with no cap. The owner can dilute holders or dump freshly minted supply into the pool.` : `A function whose name does not suggest minting (${f.name}) increases balances and total supply under owner control. This is a disguised inflation backdoor - the owner can print tokens and dump them.`));
     } else if (f.mutability !== "payable") {
@@ -801,7 +823,8 @@ export function ruleMisc(ctx: Ctx): Finding[] {
       });
       if (lower) return;
       const sell = inSellBranch(c, g) || refsPair(c, g.cond);
-      out.push(mk(ctx, "OWNER_LIMIT_TO_ZERO", `${sell ? "Sell" : "Transfer"} amount limit ${lim} can be set to zero by the owner`, sell ? "critical" : "medium", sell ? 0.8 : 0.7, g.node, f,
+      const asym = sell || refsExemption(c, g.cond) || g.enclosing.some((e) => refsExemption(c, e));
+      out.push(mk(ctx, "OWNER_LIMIT_TO_ZERO", `${sell ? "Sell" : "Transfer"} amount limit ${lim} can be set to zero by the owner${asym ? "" : " (applies to the owner too)"}`, sell ? "critical" : asym ? "high" : "low", sell ? 0.8 : 0.7, g.node, f,
         `${sn(ctx, g.cond)}  |  ${lim} set in ${s.fn.name}() without a lower bound`,
         `Transfers are rejected when amount exceeds ${lim}. The setter has no minimum, so the owner can set it to 0 (or 1 wei) and effectively stop ${sell ? "sells" : "all transfers"} while the code still looks like a harmless anti-whale limit.`,
         [loc(ctx, s.w.node, s.fn)]));

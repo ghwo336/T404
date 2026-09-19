@@ -25,6 +25,13 @@ export function attackPath(f: Finding): string[] | undefined {
         `Every ${/sell/i.test(f.title) ? "sell" : "transfer"} now runs through ${L(at)} and the fee arithmetic in the transfer path takes (almost) the whole amount.`,
         "Result: sells succeed on paper but the seller receives ~0. The collected 'fee' goes to the owner's wallet.",
       ];
+    case "ALLOWLIST_GATE":
+      return [
+        "Owner deploys; the constructor puts the owner (and nobody else) on the allow-list.",
+        "Victim receives tokens (buys, or is sent them) - receiving is not gated.",
+        `Victim tries to transfer or sell: ${L(at)}: \`${at.snippet}\` -> revert, because the victim is not on the list.`,
+        `Only ${setter ?? "the privileged setter"} can add addresses. Result: holders exit only if and when the owner lets them.`,
+      ];
     case "BLACKLIST_GATE":
       return [
         "Victim buys normally; the blacklist mapping is empty for them.",
@@ -102,7 +109,7 @@ export function checklist(c: Contract, findings: Finding[]): Check[] {
   if (tp) {
     const sell = [...has("SELL_RESTRICTION", "SELL_FEE_UNCAPPED"), ...hasSell(["TRADING_GATE", "OWNER_LIMIT_TO_ZERO"])];
     push("sell_path_symmetric", sell.length ? "fail" : "pass", sell.length ? sell[0].title : pair ? `transfer path treats to==${pair} (sell) and from==${pair} (buy) the same; no revert, diversion or owner-only fee on the sell side` : "no DEX pair role detected in the transfer path; no pair-conditioned branch exists");
-    const bl = has("BLACKLIST_GATE");
+    const bl = has("BLACKLIST_GATE", "ALLOWLIST_GATE");
     push("no_owner_blacklist", bl.length ? "fail" : "pass", bl.length ? bl[0].title : "no owner-writable address mapping is used as a block condition in the transfer path");
     const tg = findings.filter((f) => f.id === "TRADING_GATE");
     push("no_owner_pause", tg.some((f) => f.severity !== "low") ? "fail" : "pass", tg.some((f) => f.severity !== "low") ? tg[0].title : tg.length ? "one-way launch gate only (flag can only be set to true)" : "no owner-controlled flag gates transfers");

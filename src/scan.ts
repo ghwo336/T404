@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { Resolver } from "./resolve";
-import { buildModels, mainContracts } from "./model";
+import { buildModels, mainContracts, Contract } from "./model";
 import { runRules } from "./rules";
 import { attackPath, checklist } from "./explain";
 import { Finding, FileReport, ScanReport, ContractReport } from "./types";
@@ -27,7 +27,7 @@ export function listSolFiles(inputs: string[]): string[] {
   return out;
 }
 
-export function scanFile(file: string, resolver?: Resolver): FileReport {
+export function scanFile(file: string, resolver?: Resolver, sink?: { contracts: Contract[] }): FileReport {
   const res = resolver ?? new Resolver([file]);
   const closure = res.closure(file);
   const entry = closure[0];
@@ -41,6 +41,7 @@ export function scanFile(file: string, resolver?: Resolver): FileReport {
   const models = buildModels(closure.filter((pf) => pf.ast).map((pf) => ({ file: pf.file, ast: pf.ast })));
   const own = models.filter((m) => m.file === entry.file);
   const targets = mainContracts(own);
+  if (sink) sink.contracts = targets;
   const contracts: ContractReport[] = [];
   const all: Finding[] = [];
   for (const c of targets) {

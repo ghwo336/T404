@@ -11,6 +11,7 @@ import * as path from "node:path";
 import { scanFile } from "../src/scan";
 import { Resolver } from "../src/resolve";
 
+// works both from bench/run.ts (tsx) and bench/out/bench/run.js (compiled)
 const ROOT = fs.existsSync(path.join(__dirname, "malicious.tsv")) ? __dirname : path.resolve(__dirname, "..", "..");
 const SRC = path.join(ROOT, "src");
 const offline = process.argv.includes("--offline");

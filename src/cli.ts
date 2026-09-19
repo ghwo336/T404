@@ -2,7 +2,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { Command } from "commander";
-import { scan, VERSION } from "./scan";
+import { scan, scanFile, listSolFiles, VERSION } from "./scan";
+import { Resolver } from "./resolve";
 import { FileReport, ScanReport } from "./types";
 
 const C = {
@@ -104,6 +105,83 @@ program
       const bad = report.files.some((f) => f.verdict === "Malicious" || (want === "uncertain" && f.verdict === "Uncertain"));
       if (bad) process.exit(1);
     }
+  });
+
+// ---------------------------------------------------------------- TRUST404 Track 1 grading entry point
+// `noexit judge <dir>`: every *.sol directly in <dir> (no recursion) -> one JSON array on stdout matching the
+// track's schema.json; all logs on stderr; exit code 0 even if some files fail (they become UNCERTAIN).
+function t404Object(r: FileReport, fileName: string, totalLines: number, src?: string) {
+  const verdict = r.verdict.toUpperCase() as "MALICIOUS" | "BENIGN" | "UNCERTAIN";
+  const inFile = (l: { file: string; line: number }) => path.basename(l.file) === fileName && l.line >= 1 && l.line <= totalLines;
+  const strong = r.findings.filter((f) => f.severity === "critical" || f.severity === "high");
+  const shown = (verdict === "MALICIOUS" ? strong : r.findings).filter((f) => f.severity !== "info");
+  const reasons: string[] = [];
+  const evidence: { function?: string; line?: number }[] = [];
+  const seen = new Set<string>();
+  const addEv = (fn: string | undefined, line: number | undefined) => {
+    const ev: { function?: string; line?: number } = {};
+    if (fn) ev.function = fn;
+    if (line) ev.line = line;
+    if (!ev.function && !ev.line) return;
+    const k = `${ev.function ?? ""}:${ev.line ?? ""}`;
+    if (seen.has(k)) return; seen.add(k); evidence.push(ev);
+  };
+  const declLine = (fn?: string) => { if (!fn || !src) return undefined; const m = src.match(new RegExp(`^[^\\n]*\\bfunction\\s+${fn.replace(/[$]/g, "\\$")}\\s*\\(`, "m")); return m ? src.slice(0, m.index).split(/\r?\n/).length : undefined; };
+  for (const f of shown) {
+    reasons.push(`[${f.severity.toUpperCase()} ${f.id}] ${f.title}. ${f.reasoning}${f.attackPath ? " Steps: " + f.attackPath.map((s, i) => `(${i + 1}) ${s}`).join(" ") : ""}`);
+    addEv(f.location.function, inFile(f.location) ? f.location.line : declLine(f.location.function));
+    for (const rel of f.related ?? []) addEv(rel.function, inFile(rel) ? rel.line : declLine(rel.function));
+    if (f.location.function && inFile(f.location)) addEv(f.location.function, declLine(f.location.function));
+  }
+  if (verdict !== "MALICIOUS") {
+    for (const c of r.contracts) for (const k of c.checks) if (k.status === "pass") reasons.push(`[OK ${k.id}] ${k.note}`);
+    for (const f of r.findings.filter((x) => x.severity === "low" || x.severity === "medium")) reasons.push(`[NOTE ${f.id}] ${f.title}. ${f.reasoning}`);
+    if (r.parseErrors.length) reasons.push(`[PARSE] ${r.parseErrors[0]}`);
+    if (!r.contracts.length && !r.parseErrors.length) reasons.push("No deployable contract in this file (interfaces / libraries / abstract only).");
+  }
+  const ids = new Set(r.findings.map((f) => f.id));
+  const risk_type = verdict === "BENIGN" ? (r.findings.some((f) => f.severity === "low" || f.severity === "medium") ? "CENTRALIZATION" : "NONE")
+    : [...ids].some((i) => /^(OPEN_DRAIN|OPEN_MINT|OPEN_OWNER_TAKEOVER)$/.test(i)) ? "VULNERABILITY" : verdict === "MALICIOUS" ? "BACKDOOR" : "CENTRALIZATION";
+  const risk_level = r.findings.some((f) => f.severity === "critical") ? "CRITICAL" : r.findings.some((f) => f.severity === "high") ? "HIGH" : r.findings.some((f) => f.severity === "medium") ? "MEDIUM" : "LOW";
+  const confidence = verdict === "UNCERTAIN" ? 0.5 : Math.max(0.5, Math.min(0.99, shown.length ? Math.max(...shown.map((f) => f.confidence)) : 0.9));
+  return { file: fileName, verdict, reasons, evidence, risk_level, risk_type, confidence: Math.round(confidence * 100) / 100 };
+}
+
+program
+  .command("judge")
+  .description("TRUST404 Track 1 grading mode: process every *.sol directly inside <dir>, print one JSON array (schema.json) to stdout, logs to stderr, exit 0")
+  .argument("<dir>", "directory containing .sol files")
+  .option("--recursive", "also include subdirectories (grading uses top-level files only)", false)
+  .action((dir: string, opts) => {
+    const log = (m: string) => process.stderr.write(m + "\n");
+    const out: any[] = [];
+    let files: string[] = [];
+    try {
+      if (!fs.existsSync(dir)) throw new Error(`path not found: ${dir}`);
+      files = opts.recursive ? listSolFiles([dir]) : fs.readdirSync(dir).filter((f) => f.endsWith(".sol") && fs.statSync(path.join(dir, f)).isFile()).sort().map((f) => path.join(dir, f));
+    } catch (e: any) { log(`noexit: ${e.message}`); }
+    const resolver = files.length ? new Resolver([dir]) : undefined;
+    const seenNames = new Set<string>();
+    for (const file of files) {
+      const name = path.basename(file);
+      if (seenNames.has(name)) { log(`skip duplicate name ${file}`); continue; }
+      seenNames.add(name);
+      const t0 = Date.now();
+      try {
+        const r = scanFile(file, resolver);
+        const text = fs.readFileSync(file, "utf8");
+        const o = t404Object(r, name, text.split(/\r?\n/).length, text);
+        if (o.verdict === "MALICIOUS" && !o.evidence.length) { o.verdict = "UNCERTAIN"; o.reasons.unshift("Downgraded to UNCERTAIN: no in-file evidence location could be attached."); }
+        out.push(o);
+        log(`${o.verdict.padEnd(9)} ${name} (${Date.now() - t0} ms)`);
+      } catch (e: any) {
+        out.push({ file: name, verdict: "UNCERTAIN", reasons: [`analysis failed: ${e?.message ?? e}`], evidence: [], risk_level: "LOW", risk_type: "NONE", confidence: 0 });
+        log(`UNCERTAIN ${name} (error: ${e?.message ?? e})`);
+      }
+    }
+    if (!out.length) { out.push({ file: "no-input.sol", verdict: "UNCERTAIN", reasons: ["no .sol files found in the input directory"], evidence: [] }); }
+    process.stdout.write(JSON.stringify(out, null, 2) + "\n");
+    process.exitCode = 0;
   });
 
 program.parse();

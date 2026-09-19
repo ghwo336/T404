@@ -14,10 +14,23 @@ Built for **TRUST404 — Track 1: Smart Contract Threat Detection**.
 
 ---
 
+## TRUST404 grading entry point (Track 1)
+
+```bash
+./run.sh ./cases > out.json          # every *.sol directly inside ./cases -> one JSON array on stdout (schema.json), logs on stderr, exit 0
+# or, with no Node on the grading machine:
+docker build -t noexit .
+docker run --rm --network none -v "$PWD/cases:/input:ro" noexit /input > out.json
+```
+
+`run.sh` calls `node dist/cli.js judge <dir>`. Each object carries `file`, `verdict` (`MALICIOUS` / `BENIGN` / `UNCERTAIN`), `reasons[]` (rule id, title, reasoning and the numbered attack path; for BENIGN the passed checks), `evidence[]` (`{function, line}` — the triggering statement plus the function declaration, and the privileged setter that arms it), and the optional `risk_level` / `risk_type` / `confidence`. Files that fail to parse come back as `UNCERTAIN`; the run never exits non-zero. Validated against the track's `schema.json`; the five public samples (P1–P5) are all classified as labeled.
+
+Verdict policy follows the track's boundary rules: a pause/limit that applies to the owner too is availability only (`BENIGN` + centralisation note); an asymmetric one (owner or a list exempt) is `MALICIOUS`; privileged minting is `MALICIOUS` unless a supply cap is enforced in code; owner recovery of force-sent ETH is not theft.
+
 ## Quick start
 
 ```bash
-git clone https://github.com/ghwo336/T404.git && cd T404
+git clone <this repo> && cd noexit
 npm install          # only dependency that matters: @solidity-parser/parser (pure JS, bundled offline)
 npm run build
 
@@ -151,12 +164,34 @@ Findings are weighted by severity × confidence (a low-confidence finding is dow
 
 ## Sample set
 
-`samples/` contains 25 judged contracts (17 malicious, 7 benign, 1 uncertain) plus helper files for the multi-file cases covering the honeypot families seen in the wild — sell revert, owner blacklist, switchable selling, uncapped sell tax, hidden mint, fake renounce + `unlock()`, approval backdoor, external "guard" contract, balance rewrite, max-sell-to-zero, a full reflection-token clone with `bots[]` + `setSellTax`, an open-drain wallet, a multi-file project whose token file is spotless but whose imported `lib/ERC20.sol` skips allowances for the deployer, and four fully identifier-obfuscated variants — and benign controls that *look* similar (fair tax token with capped fees and a one-way launch gate, capped owner mint, OpenZeppelin-style token with unresolved imports, vesting, staking).
+`samples/` contains 26 judged contracts (17 malicious, 9 benign) plus helper files for the multi-file cases; `samples-public/` holds the track's five public samples covering the honeypot families seen in the wild — sell revert, owner blacklist, switchable selling, uncapped sell tax, hidden mint, fake renounce + `unlock()`, approval backdoor, external "guard" contract, balance rewrite, max-sell-to-zero, a full reflection-token clone with `bots[]` + `setSellTax`, an open-drain wallet, a multi-file project whose token file is spotless but whose imported `lib/ERC20.sol` skips allowances for the deployer, and four fully identifier-obfuscated variants — and benign controls that *look* similar (fair tax token with capped fees and a one-way launch gate, capped owner mint, OpenZeppelin-style token with unresolved imports, vesting, staking).
 
 ```
 $ npm test
-25 passed, 0 failed
+26 passed, 0 failed
 ```
+
+## Real-world benchmark
+
+`bench/` downloads verified source for real Ethereum contracts and runs the scanner on them (`npm run bench`; sources are cached under `bench/src/`, after which `--offline` works). Full report: `bench/RESULTS.md`.
+
+- **Malicious set**: the 189 ERC-20 backdoor contracts labeled by the Pied-Piper study (Ma et al., *ACM TOSEM* 2022; categories FreezeAccount / DisableTransfer / GenerateToken / DestroyToken / ArbitraryTransfer). 1 has no verified source.
+- **Benign set**: 29 blue-chip tokens (WETH, UNI, LINK, DAI, AAVE, COMP, SHIB, PEPE, LDO, ENS, 1INCH, …).
+
+| label \ verdict | Malicious | Uncertain | Benign |
+|---|---|---|---|
+| backdoor (n=188) | **157** | 8 | 23 |
+| blue-chip (n=29) | 11 | 2 | **16** |
+
+Recall 83.5 % (87.8 % counting *Uncertain* as a flag), precision 93.5 %, F1 0.882 — with zero tuning on this set beyond fixing bugs it exposed. The 11 blue-chip "false positives" are almost all *uncapped privileged minting* (1INCH, SUSHI, YFI, ENS, GRT, DAI, …): under the track's own rule ("only a code-enforced cap makes owner minting benign", cf. public samples P2 vs P4) that is the required verdict, so the tool reports it as `MALICIOUS` with `risk_type: CENTRALIZATION`-style reasoning. Under a looser policy those would be medium notes and precision returns to ~98 %.
+
+What the misses and the two "false positives" actually are, because they say more than the numbers:
+
+- **PEPE** is flagged Malicious: it really does have an owner-writable `blacklists[]` checked in `_beforeTokenTransfer` plus owner-settable `maxHoldingAmount`. The verdict is correct on the code; the token is "benign" only because the team never used the switch. This is exactly the class of risk the tool exists to surface.
+- **LDO** (MiniMe) is flagged because its `controller` can veto every transfer (`onTransfer` hook) and move tokens without allowance. Again true on the code.
+- **Symmetric pauses** (OpenZeppelin `Pausable`, `stopped`, `transfersEnabled` … with no owner exemption) are *low* → *Benign* with a centralisation note, per the track's rule 1: nothing moves to the owner's side. The same flag with an owner/whitelist escape hatch is *critical*.
+- Most remaining misses are dataset quirks: `freezeAccount()` that writes a mapping **no transfer ever reads** (dead backdoor — nothing can be frozen), a Chainlink `Oracle.sol` labeled FreezeAccount, and MKR/SAI (which sit in *both* lists; MKR was removed from the benign list).
+- Owner-only uncapped `mint()` is *critical* per the track's rule 2 (see above); a cap check in the same function makes it *low*.
 
 ## Limitations (honest ones)
 

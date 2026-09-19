@@ -1,0 +1,8 @@
+node_modules
+bench/src
+bench/out
+dist
+web/noexit.html
+docs
+.env
+.git

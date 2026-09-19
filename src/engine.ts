@@ -1,7 +1,7 @@
 // Filesystem-free core: analyze in-memory sources. Used by the browser UI and usable as a library.
 import parser from "@solidity-parser/parser";
 import { Node, walk } from "./ast";
-import { buildModels, mainContracts } from "./model";
+import { buildModels, mainContracts, Contract } from "./model";
 import { runRules } from "./rules";
 import { attackPath, checklist } from "./explain";
 import { Finding, FileReport, Verdict, ContractReport, Severity } from "./types";
@@ -91,7 +91,7 @@ export function resolveInMemory(raw: string, fromFile: string, files: Iterable<s
 export interface AnalyzeOptions { cwd?: string }
 
 /** Analyze one entry file given every available source (entry included). */
-export function analyze(entry: string, sources: Map<string, string>, cache?: Map<string, Parsed>): FileReport {
+export function analyze(entry: string, sources: Map<string, string>, cache?: Map<string, Parsed>, sink?: { contracts: Contract[] }): FileReport {
   const parsed = cache ?? new Map<string, Parsed>();
   const get = (f: string) => { let p = parsed.get(f); if (!p) { p = parseSource(f, sources.get(f) ?? ""); parsed.set(f, p); } return p; };
   const closure: Parsed[] = [];
@@ -113,6 +113,7 @@ export function analyze(entry: string, sources: Map<string, string>, cache?: Map
   for (const p of closure) srcMap.set(p.file, p.source);
   const models = buildModels(closure.filter((p) => p.ast).map((p) => ({ file: p.file, ast: p.ast })));
   const targets = mainContracts(models.filter((m) => m.file === entry));
+  if (sink) sink.contracts = targets;
   const contracts: ContractReport[] = [];
   const all: Finding[] = [];
   for (const c of targets) {

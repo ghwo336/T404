@@ -22,7 +22,7 @@
     "@types/node": "^26.6.2",
     "esbuild": "^0.28.2",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3"
   },
   "types": "dist/index.d.ts",
   "bin": {

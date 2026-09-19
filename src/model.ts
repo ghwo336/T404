@@ -163,9 +163,9 @@ function modifierPrivileged(m: Node, ownerVars: Set<string>): string | null {
   let reason: string | null = null;
   walk(m.body, (n) => {
     if (reason) return false;
-    if (isCallTo(n, ["require"]) && n.arguments?.[0]) {
+    if (isCallTo(n, ["require", "assert"]) && n.arguments?.[0]) {
       const r = isPrivilegeCheck(n.arguments[0], params, ownerVars);
-      if (r) reason = `require(${r})`;
+      if (r) reason = `${calleeName(n)}(${r})`;
     } else if (n.type === "IfStatement") {
       const r = isPrivilegeCheck(n.condition, params, ownerVars);
       const hasRevert = collect(n.trueBody, (x) => x.type === "RevertStatement" || isCallTo(x, ["revert"])).length > 0 || collect(n.falseBody, (x) => x.type === "RevertStatement" || isCallTo(x, ["revert"])).length > 0;
@@ -189,9 +189,9 @@ function funcPrivilege(f: Node, mods: Map<string, Modifier>, ownerVars: Set<stri
   let reason = "";
   walk(f.body, (n) => {
     if (reason) return false;
-    if (isCallTo(n, ["require"]) && n.arguments?.[0]) {
+    if (isCallTo(n, ["require", "assert"]) && n.arguments?.[0]) {
       const r = isPrivilegeCheck(n.arguments[0], params, ownerVars);
-      if (r) reason = `inline require(${r})`;
+      if (r) reason = `inline ${calleeName(n)}(${r})`;
     } else if (n.type === "IfStatement") {
       const r = isPrivilegeCheck(n.condition, params, ownerVars);
       if (r) {

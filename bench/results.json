@@ -23,7 +23,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -33,7 +33,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -42,10 +42,10 @@
     "address": "0x4c1cdef065c27dd08037d693c512bb7ed4c38f17",
     "label": "Malicious",
     "category": "GenerateToken",
-    "verdict": "Malicious",
-    "score": 49,
+    "verdict": "Uncertain",
+    "score": 31,
     "note": "",
-    "top": "UNCAPPED_FEE,TRADING_GATE",
+    "top": "UNCAPPED_FEE,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -53,7 +53,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -63,7 +63,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -72,10 +72,10 @@
     "address": "0x7d5902d64e4ed8c60f7c3e2ad1a0aaddd54a6e3f",
     "label": "Malicious",
     "category": "GenerateToken",
-    "verdict": "Malicious",
-    "score": 49,
+    "verdict": "Uncertain",
+    "score": 31,
     "note": "",
-    "top": "UNCAPPED_FEE,TRADING_GATE",
+    "top": "UNCAPPED_FEE,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -83,7 +83,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -93,7 +93,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -103,7 +103,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 94,
+    "score": 76,
     "note": "",
     "top": "BLACKLIST_GATE,UNCAPPED_FEE",
     "parseErrors": 0
@@ -115,7 +115,7 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
+    "top": "HIDDEN_MINT,HIDDEN_MINT",
     "parseErrors": 0
   },
   {
@@ -123,7 +123,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -133,7 +133,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -143,7 +143,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -163,7 +163,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -173,7 +173,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -182,10 +182,10 @@
     "address": "0x386cabc0b14a507a4e024dea15554342865b20de",
     "label": "Malicious",
     "category": "GenerateToken",
-    "verdict": "Malicious",
-    "score": 49,
+    "verdict": "Uncertain",
+    "score": 31,
     "note": "",
-    "top": "UNCAPPED_FEE,TRADING_GATE",
+    "top": "UNCAPPED_FEE,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -193,9 +193,9 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 48,
+    "score": 81,
     "note": "",
-    "top": "OPEN_OWNER_TAKEOVER,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,OPEN_OWNER_TAKEOVER",
     "parseErrors": 0
   },
   {
@@ -213,7 +213,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -223,7 +223,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -233,7 +233,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -243,7 +243,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -253,9 +253,9 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 96,
+    "score": 100,
     "note": "",
-    "top": "BALANCE_MANIPULATION,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -263,7 +263,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -272,8 +272,8 @@
     "address": "0xb052f8a33d8bb068414eade06af6955199f9f010",
     "label": "Malicious",
     "category": "GenerateToken",
-    "verdict": "Benign",
-    "score": 7,
+    "verdict": "Malicious",
+    "score": 41,
     "note": "",
     "top": "HIDDEN_MINT",
     "parseErrors": 0
@@ -283,7 +283,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -293,7 +293,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -303,7 +303,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -313,7 +313,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -323,7 +323,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -343,7 +343,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -353,7 +353,7 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 84,
+    "score": 86,
     "note": "multi-file (5)",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -382,10 +382,10 @@
     "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
     "label": "Malicious",
     "category": "DestoryToken",
-    "verdict": "Uncertain",
-    "score": 27,
+    "verdict": "Malicious",
+    "score": 42,
     "note": "",
-    "top": "TRADING_GATE,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,TRADING_GATE",
     "parseErrors": 0
   },
   {
@@ -393,9 +393,9 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 84,
+    "score": 85,
     "note": "",
-    "top": "BALANCE_MANIPULATION,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -422,10 +422,10 @@
     "address": "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359",
     "label": "Malicious",
     "category": "DestoryToken",
-    "verdict": "Uncertain",
-    "score": 27,
+    "verdict": "Malicious",
+    "score": 42,
     "note": "",
-    "top": "TRADING_GATE,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,TRADING_GATE",
     "parseErrors": 0
   },
   {
@@ -433,7 +433,7 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 100,
+    "score": 91,
     "note": "",
     "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
     "parseErrors": 0
@@ -442,20 +442,20 @@
     "address": "0x99bc08db67f52010f2d6017b7ad968808113db10",
     "label": "Malicious",
     "category": "DestoryToken",
-    "verdict": "Uncertain",
-    "score": 30,
+    "verdict": "Malicious",
+    "score": 63,
     "note": "",
-    "top": "SELFDESTRUCT,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,SELFDESTRUCT",
     "parseErrors": 0
   },
   {
     "address": "0x574f84108a98c575794f75483d801d1d5dc861a5",
     "label": "Malicious",
     "category": "DestoryToken",
-    "verdict": "Uncertain",
-    "score": 30,
+    "verdict": "Malicious",
+    "score": 63,
     "note": "",
-    "top": "SELFDESTRUCT,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,SELFDESTRUCT",
     "parseErrors": 0
   },
   {
@@ -473,7 +473,7 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 100,
+    "score": 98,
     "note": "",
     "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
     "parseErrors": 0
@@ -483,7 +483,7 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 100,
+    "score": 91,
     "note": "",
     "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
     "parseErrors": 0
@@ -495,7 +495,7 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "EXTERNAL_TRANSFER_HOOK,EXTERNAL_TRANSFER_HOOK",
+    "top": "HIDDEN_MINT,EXTERNAL_TRANSFER_HOOK",
     "parseErrors": 0
   },
   {
@@ -533,7 +533,7 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -553,7 +553,7 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 100,
+    "score": 89,
     "note": "",
     "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
     "parseErrors": 0
@@ -573,7 +573,7 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -582,10 +582,10 @@
     "address": "0xc7c03b8a3fc5719066e185ea616e87b88eba44a3",
     "label": "Malicious",
     "category": "DestoryToken",
-    "verdict": "Uncertain",
-    "score": 30,
+    "verdict": "Malicious",
+    "score": 63,
     "note": "",
-    "top": "SELFDESTRUCT,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,SELFDESTRUCT",
     "parseErrors": 0
   },
   {
@@ -593,7 +593,7 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 100,
+    "score": 91,
     "note": "",
     "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
     "parseErrors": 0
@@ -603,9 +603,9 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 84,
+    "score": 85,
     "note": "",
-    "top": "BALANCE_MANIPULATION,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -613,7 +613,7 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 100,
+    "score": 91,
     "note": "",
     "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
     "parseErrors": 0
@@ -643,7 +643,7 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 100,
+    "score": 91,
     "note": "multi-file (4)",
     "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
     "parseErrors": 0
@@ -673,7 +673,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 84,
+    "score": 86,
     "note": "multi-file (5)",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -703,7 +703,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -713,7 +713,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -743,7 +743,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 64,
+    "score": 86,
     "note": "",
     "top": "BLACKLIST_GATE,TRADING_GATE",
     "parseErrors": 0
@@ -763,9 +763,9 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 80,
+    "score": 100,
     "note": "",
-    "top": "BLACKLIST_GATE,SELFDESTRUCT",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
   },
   {
@@ -813,7 +813,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -843,7 +843,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -913,7 +913,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -923,7 +923,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -953,7 +953,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -983,7 +983,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -993,7 +993,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1003,7 +1003,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1033,7 +1033,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1053,7 +1053,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1063,7 +1063,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1073,7 +1073,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1153,9 +1153,9 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 60,
+    "score": 93,
     "note": "",
-    "top": "BALANCE_MANIPULATION,TRADING_GATE",
+    "top": "BALANCE_MANIPULATION,HIDDEN_MINT",
     "parseErrors": 0
   },
   {
@@ -1173,7 +1173,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1182,8 +1182,8 @@
     "address": "0x17280da053596e097604839c61a2ef5efb7d493f",
     "label": "Malicious",
     "category": "FreezeAccount",
-    "verdict": "Benign",
-    "score": 7,
+    "verdict": "Malicious",
+    "score": 41,
     "note": "",
     "top": "HIDDEN_MINT",
     "parseErrors": 0
@@ -1193,7 +1193,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1203,7 +1203,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1243,7 +1243,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1253,7 +1253,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1293,7 +1293,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1343,7 +1343,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1373,7 +1373,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1433,7 +1433,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1463,7 +1463,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1473,7 +1473,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1563,7 +1563,7 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1612,8 +1612,8 @@
     "address": "0x7e0d051ec68668d603c4e33255d1aed342a691b7",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 20,
+    "verdict": "Benign",
+    "score": 2,
     "note": "",
     "top": "TRADING_GATE",
     "parseErrors": 0
@@ -1632,8 +1632,8 @@
     "address": "0x9b11efcaaa1890f6ee52c6bb7cf8153ac5d74139",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Malicious",
-    "score": 41,
+    "verdict": "Uncertain",
+    "score": 23,
     "note": "",
     "top": "SELFDESTRUCT,TRADING_GATE",
     "parseErrors": 0
@@ -1642,28 +1642,28 @@
     "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 27,
+    "verdict": "Malicious",
+    "score": 42,
     "note": "",
-    "top": "TRADING_GATE,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,TRADING_GATE",
     "parseErrors": 0
   },
   {
     "address": "0x14c926f2290044b647e1bf2072e67b495eff1905",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 22,
+    "verdict": "Malicious",
+    "score": 88,
     "note": "",
-    "top": "TRADING_GATE,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,HIDDEN_MINT",
     "parseErrors": 0
   },
   {
     "address": "0x17d30c85376bc2c39edc1da179162d308559a3c4",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 20,
+    "verdict": "Benign",
+    "score": 2,
     "note": "",
     "top": "TRADING_GATE",
     "parseErrors": 0
@@ -1675,15 +1675,15 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BLACKLIST_GATE,APPROVAL_BYPASS",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
     "parseErrors": 0
   },
   {
     "address": "0x031e0c6a7c91df1bc171d33cccc6988fd2ddeb6f",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 20,
+    "verdict": "Benign",
+    "score": 2,
     "note": "",
     "top": "TRADING_GATE",
     "parseErrors": 0
@@ -1703,7 +1703,7 @@
     "label": "Malicious",
     "category": "DisableTransfer",
     "verdict": "Malicious",
-    "score": 64,
+    "score": 86,
     "note": "",
     "top": "BLACKLIST_GATE,TRADING_GATE",
     "parseErrors": 0
@@ -1715,25 +1715,25 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BLACKLIST_GATE,APPROVAL_BYPASS",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
     "parseErrors": 0
   },
   {
     "address": "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 27,
+    "verdict": "Malicious",
+    "score": 42,
     "note": "",
-    "top": "TRADING_GATE,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,TRADING_GATE",
     "parseErrors": 0
   },
   {
     "address": "0x381beac50b9a5ea06a320a72592f7460c49a2b48",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 20,
+    "verdict": "Benign",
+    "score": 2,
     "note": "",
     "top": "TRADING_GATE",
     "parseErrors": 0
@@ -1742,8 +1742,8 @@
     "address": "0x9954ff0295443c01f562dccb1f893be464e01986",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 20,
+    "verdict": "Benign",
+    "score": 2,
     "note": "",
     "top": "TRADING_GATE",
     "parseErrors": 0
@@ -1763,17 +1763,17 @@
     "label": "Malicious",
     "category": "DisableTransfer",
     "verdict": "Malicious",
-    "score": 71,
+    "score": 86,
     "note": "",
-    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
   },
   {
     "address": "0xa66daa57432024023db65477ba87d4e7f5f95213",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 20,
+    "verdict": "Benign",
+    "score": 2,
     "note": "",
     "top": "TRADING_GATE",
     "parseErrors": 0
@@ -1783,7 +1783,7 @@
     "label": "Malicious",
     "category": "DisableTransfer",
     "verdict": "Malicious",
-    "score": 51,
+    "score": 84,
     "note": "",
     "top": "BLACKLIST_GATE,HIDDEN_MINT",
     "parseErrors": 0
@@ -1792,8 +1792,8 @@
     "address": "0xbc2faad1ec407571249b0e874a9abd840111389b",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 20,
+    "verdict": "Benign",
+    "score": 2,
     "note": "",
     "top": "TRADING_GATE",
     "parseErrors": 0
@@ -1812,8 +1812,8 @@
     "address": "0xc5b106f17246b2f5c0c658dbd6e8d168695806ab",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 20,
+    "verdict": "Benign",
+    "score": 2,
     "note": "",
     "top": "TRADING_GATE",
     "parseErrors": 0
@@ -1825,7 +1825,7 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BALANCE_MANIPULATION,UNCAPPED_FEE",
+    "top": "BALANCE_MANIPULATION,HIDDEN_MINT",
     "parseErrors": 0
   },
   {
@@ -1835,7 +1835,7 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BLACKLIST_GATE,BALANCE_MANIPULATION",
+    "top": "BLACKLIST_GATE,ALLOWLIST_GATE",
     "parseErrors": 0
   },
   {
@@ -1845,15 +1845,15 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BLACKLIST_GATE,APPROVAL_BYPASS",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
     "parseErrors": 0
   },
   {
     "address": "0xda2e0aa8f697db190c32034894cf9731f6619960",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Uncertain",
-    "score": 20,
+    "verdict": "Benign",
+    "score": 2,
     "note": "",
     "top": "TRADING_GATE",
     "parseErrors": 0
@@ -1873,7 +1873,7 @@
     "label": "Malicious",
     "category": "DisableTransfer",
     "verdict": "Malicious",
-    "score": 64,
+    "score": 86,
     "note": "",
     "top": "BLACKLIST_GATE,TRADING_GATE",
     "parseErrors": 0
@@ -1885,7 +1885,7 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BLACKLIST_GATE,APPROVAL_BYPASS",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
     "parseErrors": 0
   },
   {
@@ -1922,8 +1922,8 @@
     "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
     "label": "Benign",
     "category": "DAI",
-    "verdict": "Benign",
-    "score": 7,
+    "verdict": "Malicious",
+    "score": 41,
     "note": "",
     "top": "HIDDEN_MINT",
     "parseErrors": 0
@@ -1963,7 +1963,7 @@
     "label": "Benign",
     "category": "PEPE",
     "verdict": "Malicious",
-    "score": 47,
+    "score": 44,
     "note": "",
     "top": "BLACKLIST_GATE,OWNER_LIMIT_TO_ZERO",
     "parseErrors": 0
@@ -1983,7 +1983,7 @@
     "label": "Benign",
     "category": "LDO",
     "verdict": "Malicious",
-    "score": 100,
+    "score": 91,
     "note": "",
     "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
     "parseErrors": 0
@@ -2002,8 +2002,8 @@
     "address": "0x111111111117dc0aa78b770fa6a738034120c302",
     "label": "Benign",
     "category": "1INCH",
-    "verdict": "Benign",
-    "score": 7,
+    "verdict": "Malicious",
+    "score": 41,
     "note": "",
     "top": "HIDDEN_MINT",
     "parseErrors": 0
@@ -2012,8 +2012,8 @@
     "address": "0x6b3595068778dd592e39a122f4f5a5cf09c90fe2",
     "label": "Benign",
     "category": "SUSHI",
-    "verdict": "Benign",
-    "score": 7,
+    "verdict": "Malicious",
+    "score": 41,
     "note": "",
     "top": "HIDDEN_MINT",
     "parseErrors": 0
@@ -2022,8 +2022,8 @@
     "address": "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e",
     "label": "Benign",
     "category": "YFI",
-    "verdict": "Benign",
-    "score": 7,
+    "verdict": "Malicious",
+    "score": 41,
     "note": "",
     "top": "HIDDEN_MINT",
     "parseErrors": 0
@@ -2052,8 +2052,8 @@
     "address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
     "label": "Benign",
     "category": "GRT",
-    "verdict": "Benign",
-    "score": 7,
+    "verdict": "Malicious",
+    "score": 41,
     "note": "",
     "top": "HIDDEN_MINT",
     "parseErrors": 0
@@ -2062,8 +2062,8 @@
     "address": "0xba100000625a3754423978a60c9317c58a424e3d",
     "label": "Benign",
     "category": "BAL",
-    "verdict": "Benign",
-    "score": 7,
+    "verdict": "Malicious",
+    "score": 41,
     "note": "",
     "top": "HIDDEN_MINT",
     "parseErrors": 0
@@ -2102,10 +2102,10 @@
     "address": "0x0f5d2fb29fb7d3cfee444a200298f468908cc942",
     "label": "Benign",
     "category": "MANA",
-    "verdict": "Uncertain",
-    "score": 14,
+    "verdict": "Malicious",
+    "score": 48,
     "note": "",
-    "top": "TRADING_GATE,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,TRADING_GATE",
     "parseErrors": 0
   },
   {
@@ -2142,18 +2142,18 @@
     "address": "0xd26114cd6ee289accf82350c8d8487fedb8a0c07",
     "label": "Benign",
     "category": "OMG",
-    "verdict": "Uncertain",
-    "score": 22,
+    "verdict": "Malicious",
+    "score": 88,
     "note": "",
-    "top": "TRADING_GATE,HIDDEN_MINT",
+    "top": "HIDDEN_MINT,HIDDEN_MINT",
     "parseErrors": 0
   },
   {
     "address": "0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b",
     "label": "Benign",
     "category": "CRO",
-    "verdict": "Benign",
-    "score": 7,
+    "verdict": "Malicious",
+    "score": 41,
     "note": "",
     "top": "HIDDEN_MINT",
     "parseErrors": 0
