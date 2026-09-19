@@ -704,7 +704,8 @@ export function ruleDangerousOps(ctx: Ctx): Finding[] {
         const isThis = target?.type === "FunctionCall" && target.arguments?.[0]?.type === "Identifier" && target.arguments[0].name === "this";
         const proxyShape = f.name === "fallback" || /^_?(delegate|fallback|_implementation|delegateTo|_delegateTo)$/i.test(f.name) || (target?.type === "FunctionCall" && /implementation/i.test(calleeName(target) ?? "")) || (tid && /implementation|logic/i.test(tid));
         if (!isThis && proxyShape) {
-          out.push(mk(ctx, "UPGRADEABLE_PROXY", "Upgradeable proxy: logic can be replaced by the proxy admin", "low", 0.8, n, f,
+          const adminSettable = tid && privilegedSetters(c, tid).length > 0;
+          out.push(mk(ctx, "UPGRADEABLE_PROXY", adminSettable ? "Upgradeable proxy whose implementation a single privileged key can swap" : "Upgradeable proxy: logic can be replaced by the proxy admin", adminSettable ? "medium" : "low", 0.8, n, f,
             `${sn(ctx, n)} in ${f.name}()`, `Standard delegatecall proxy pattern. The implementation behind this address decides the real behaviour; analyze the implementation contract as well.`));
         } else if (!isThis) {
           out.push(mk(ctx, "DELEGATECALL", settable ? "delegatecall to an owner-controlled address" : "delegatecall to external code", settable ? "critical" : "high", settable ? 0.85 : 0.6, n, f,
@@ -862,7 +863,205 @@ function dedupe(fs: Finding[]): Finding[] {
   });
 }
 
+
+// ================================================================ additional families (research-note §7)
+
+/** does this function (or anything it calls inside the transfer path) decrease a balance-mapping slot? */
+function debitsBalance(c: Contract, f: Func, seen = new Set<string>()): boolean {
+  if (seen.has(f.name)) return false; seen.add(f.name);
+  if (f.writes.some((w) => c.balanceVars.has(w.base) && writeKind(w) === "decrease")) return true;
+  for (const callee of f.calls) { const g = c.functions.get(callee); if (g && debitsBalance(c, g, seen)) return true; }
+  return f.callsSuper; // super._transfer debits in the base
+}
+
+export function ruleTimeGate(ctx: Ctx): Finding[] {
+  const { c } = ctx;
+  const out: Finding[] = [];
+  const isTime = (n: Node) => (n.type === "MemberAccess" && (n.memberName === "timestamp" || n.memberName === "number") && n.expression?.name === "block") || (n.type === "Identifier" && n.name === "now");
+  for (const g of transferGates(c)) {
+    if (g.kind === "if") continue;
+    if (!collect(g.cond, isTime).length) continue;
+    const vars = identifiers(g.cond).filter((i) => c.stateVars.has(i) && !c.stateVars.get(i)!.isMapping && !c.stateVars.get(i)!.isConstant);
+    const settable = vars.map((v) => ({ v, s: privilegedSetters(c, v).filter(({ fn, w }) => valueFromParam(fn, w)) })).filter((x) => x.s.length);
+    const asym = refsExemption(c, g.cond) || g.enclosing.some((e) => refsExemption(c, e));
+    if (settable.length) {
+      const { v, s } = settable[0];
+      out.push(mk(ctx, "EXIT_TIME_GATE", asym ? "Owner-adjustable time lock on transfers with an owner exemption" : "Owner can move the transfer time lock (applies to the owner too)", asym ? "critical" : "low", 0.8, g.node, g.fn,
+        `${sn(ctx, g.cond)}  |  ${v} set in ${s[0].fn.name}() [${s[0].fn.privilegeReason}]`,
+        `Transfers are gated on block time against ${v}, and a privileged function can push that boundary arbitrarily far into the future. ${asym ? "The owner/exempt path is not subject to it, so holders are locked while the owner trades." : "Holders can be locked indefinitely under a cover story of 'vesting' or 'launch protection'."}`,
+        [loc(ctx, s[0].w.node, s[0].fn)]));
+    } else if (vars.length === 0 || vars.every((v) => c.stateVars.get(v)!.isConstant)) {
+      out.push(mk(ctx, "EXIT_TIME_GATE", "Fixed time window on transfers", "low", 0.7, g.node, g.fn, sn(ctx, g.cond), `Transfers depend on block time against a constant or immutable bound - a launch/vesting schedule that nobody can change after deployment.`));
+    }
+  }
+  return out;
+}
+
+export function ruleCallbackCycle(ctx: Ctx): Finding[] {
+  const { c } = ctx;
+  const out: Finding[] = [];
+  const path = [...c.coreTransferPath];
+  for (const a of path) {
+    const fa = c.functions.get(a);
+    if (!fa) continue;
+    for (const b of fa.calls) {
+      if (b === a || !c.coreTransferPath.has(b)) continue;
+      const fb = c.functions.get(b);
+      if (!fb || !fb.calls.has(a)) continue; // a -> b -> a cycle
+      // does the re-entering call pass a controlled address (state var / address(this)) as a transfer argument?
+      let node: Node | null = null;
+      walk(fb.node.body, (n) => {
+        if (node) return false;
+        if (n.type === "FunctionCall" && calleeName(n) === a) {
+          const args: Node[] = n.arguments ?? [];
+          if (args.some((x) => (x.type === "FunctionCall" && x.arguments?.[0]?.name === "this") || (x.type === "Identifier" && c.stateVars.get(x.name)?.typeStr === "address"))) node = n;
+        }
+      });
+      if (!node) continue;
+      const gated = transferGates(c).some((g) => g.kind !== "if" && g.fn.name === a);
+      out.push(mk(ctx, "EXIT_CALLBACK_CYCLE", "Transfer re-enters itself with a contract-controlled address", gated ? "high" : "medium", 0.6, node, fb,
+        `${a}() -> ${b}() -> ${a}(${sn(ctx, node)})`,
+        `The transfer path calls itself again with an address the contract controls. If the gate in ${a}() compares sender/receiver with a stored address, the nested call can be made to always fail for ordinary sellers while the seller never appears in any list (the 'invalid callback' trapdoor).`));
+    }
+  }
+  return out;
+}
+
+export function ruleFeeAddrMutable(ctx: Ctx): Finding[] {
+  const { c } = ctx;
+  const out: Finding[] = [];
+  // address state vars that receive value inside the transfer path
+  const receivers = new Set<string>();
+  for (const fname of c.transferPath) {
+    const f = c.functions.get(fname);
+    if (!f?.node.body) continue;
+    for (const w of f.writes) if (c.balanceVars.has(w.base) && writeKind(w) === "increase") { const idx = indexChain(w.target)[0]; const id = idx?.type === "Identifier" ? idx.name : null; if (id && c.stateVars.get(id)?.typeStr.startsWith("address")) receivers.add(id); }
+    walk(f.node.body, (n) => {
+      if (n.type === "FunctionCall" && /^(_transfer|_basicTransfer|_tokenTransfer|_transferStandard|transfer|_update|_send)$/.test(calleeName(n) ?? "")) {
+        const to = n.arguments?.[n.arguments.length === 3 ? 1 : 0];
+        if (to?.type === "Identifier" && c.stateVars.get(to.name)?.typeStr.startsWith("address")) receivers.add(to.name);
+      }
+      if (n.type === "FunctionCall" && n.expression?.type === "MemberAccess" && (n.expression.memberName === "transfer" || n.expression.memberName === "send")) {
+        const recv = n.expression.expression; const id = recv?.type === "Identifier" ? recv.name : recv?.type === "FunctionCall" && recv.arguments?.[0]?.type === "Identifier" ? recv.arguments[0].name : null;
+        if (id && c.stateVars.get(id)?.typeStr.startsWith("address")) receivers.add(id);
+      }
+    });
+  }
+  for (const v of receivers) {
+    if (c.pairVars.has(v) || c.routerVars.has(v)) continue;
+    const setters = privilegedSetters(c, v).filter(({ fn, w }) => valueFromParam(fn, w));
+    if (!setters.length) continue;
+    out.push(mk(ctx, "FEE_ADDR_MUTABLE", `Fee recipient ${v} can be redirected by the owner`, "medium", 0.75, setters[0].w.node, setters[0].fn,
+      `${sn(ctx, setters[0].w.node)} in ${setters[0].fn.name}() [${setters[0].fn.privilegeReason}]; ${v} receives value inside the transfer path`,
+      `Every fee deducted on transfer is sent to ${v}, and a privileged function can point it at any address. On its own this is centralisation; combined with an uncapped fee it is the second half of a drain.`));
+  }
+  return out;
+}
+
+export function ruleViewCallerDependent(ctx: Ctx): Finding[] {
+  const { c } = ctx;
+  const out: Finding[] = [];
+  for (const f of c.functions.values()) {
+    if (!/^(balanceOf|totalSupply|allowance|decimals|name|symbol)$/.test(f.name) || !f.node.body) continue;
+    walk(f.node.body, (n) => {
+      const cond = n.type === "IfStatement" ? n.condition : n.type === "Conditional" ? n.condition : null;
+      if (!cond) return;
+      const dep = collect(cond, (x) => isMsgSender(x) || isTxOrigin(x)).length > 0 || identifiers(cond).some((i) => c.ownerVars.has(i)) || collect(cond, (x) => x.type === "IndexAccess" && isMsgSender(x.index)).length > 0;
+      if (dep) out.push(mk(ctx, "VIEW_CALLER_DEPENDENT", `${f.name}() answers differently depending on who asks`, "high", 0.85, n, f, sn(ctx, cond),
+        `A standard view function branches on msg.sender/owner. Explorers, wallets and DEX front-ends are shown one number while the transfer logic uses another - the 'balanceOf that lies' class (TokenScope). Used to fake liquidity, balances or supply.`));
+    });
+  }
+  return out;
+}
+
+export function ruleExemptPath(ctx: Ctx): Finding[] {
+  const { c } = ctx;
+  const out: Finding[] = [];
+  for (const fname of c.coreTransferPath) {
+    const f = c.functions.get(fname);
+    if (!f?.node.body || !debitsBalance(c, f)) continue;
+    walk(f.node.body, (n) => {
+      if (n.type !== "IfStatement") return;
+      if (!refsExemption(c, n.condition) && !collect(n.condition, (x) => isMsgSender(x)).some(() => identifiers(n.condition).some((i) => c.ownerVars.has(i)))) return;
+      const body = n.trueBody;
+      const hasReturn = collect(body, (x) => x.type === "ReturnStatement").length > 0;
+      if (!hasReturn) return;
+      // the branch credits someone or calls a transfer helper but never debits (directly or via callees)
+      const credits = collect(body, (x) => x.type === "BinaryOperation" && ["=", "+="].includes(x.operator) && c.balanceVars.has(baseName(x.left) ?? "") && writeKind({ node: x, target: x.left, base: baseName(x.left)!, operator: x.operator, value: x.right }) === "increase").length > 0;
+      const debits = collect(body, (x) => x.type === "BinaryOperation" && ["=", "-="].includes(x.operator) && c.balanceVars.has(baseName(x.left) ?? "") && writeKind({ node: x, target: x.left, base: baseName(x.left)!, operator: x.operator, value: x.right }) === "decrease").length > 0
+        || collect(body, (x) => x.type === "FunctionCall" && c.functions.has(calleeName(x) ?? "") && debitsBalance(c, c.functions.get(calleeName(x)!)!)).length > 0
+        || collect(body, (x) => isSuperCallNode(x)).length > 0;
+      if (credits && !debits) {
+        out.push(mk(ctx, "LEAK_EXEMPT_PATH", "Privileged sender is credited without being debited", "critical", 0.8, n, f, sn(ctx, n.condition),
+          `Inside the transfer path, a branch taken only for the owner/exempt sender credits the recipient and returns without reducing the sender's balance. The privileged account can 'transfer' tokens it does not have - supply is created on every such call, unaccounted in totalSupply.`));
+      }
+    });
+  }
+  return out;
+}
+function isSuperCallNode(n: Node): boolean { return n?.type === "FunctionCall" && n.expression?.type === "MemberAccess" && n.expression.expression?.type === "Identifier" && n.expression.expression.name === "super"; }
+
+export function ruleApprovalDrain(ctx: Ctx): Finding[] {
+  const { c } = ctx;
+  const out: Finding[] = [];
+  for (const f of c.functions.values()) {
+    if (f.isConstructor || !f.node.body || !/^(public|external|default)$/.test(f.visibility)) continue;
+    walk(f.node.body, (n) => {
+      if (n.type !== "FunctionCall" || n.expression?.type !== "MemberAccess" || !/^(transferFrom|safeTransferFrom|permitTransferFrom)$/.test(n.expression.memberName)) return;
+      const args: Node[] = n.arguments ?? [];
+      const fromArg = args[0], toArg = args[1];
+      if (!fromArg || !toArg || !isMsgSender(fromArg)) return;
+      const toIsThis = toArg.type === "FunctionCall" && toArg.arguments?.[0]?.name === "this";
+      if (toIsThis) return; // deposit into this contract: normal
+      const toIsParam = toArg.type === "Identifier" && f.params.includes(toArg.name);
+      if (toIsParam) return; // caller chooses the destination
+      const toId = baseName(toArg);
+      const hard = toArg.type === "NumberLiteral" || (toArg.type === "FunctionCall" && toArg.arguments?.[0]?.type === "NumberLiteral");
+      const toOwner = (toId && (c.ownerVars.has(toId) || c.stateVars.has(toId))) || (toArg.type === "FunctionCall" && isOwnerGetterCall(toArg));
+      if (!hard && !toOwner) return;
+      // is the caller credited in return (a swap/deposit)?  any write to a mapping indexed by msg.sender in this function
+      const credited = f.writes.some((w) => { const idx = indexChain(w.target)[0]; return idx && isMsgSender(idx) && writeKind(w) === "increase"; });
+      if (credited) return;
+      out.push(mk(ctx, "DRAIN_APPROVAL_PULL", `'${f.name}()' pulls the caller's approved tokens to ${hard ? "a hard-coded address" : toId ?? "the owner"}`, "critical", 0.85, n, f, sn(ctx, n),
+        `The function moves tokens from msg.sender (who must have approved this contract) to an address the caller does not choose and receives nothing in return. This is the on-chain half of an approval-phishing / 'claim airdrop' drainer.`));
+    });
+  }
+  return out;
+}
+
+export function ruleCustodySweep(ctx: Ctx): Finding[] {
+  const { c } = ctx;
+  const out: Finding[] = [];
+  // does the contract custody user funds? a payable function that credits a per-user mapping with msg.value
+  let custody: Func | null = null;
+  for (const f of c.functions.values()) {
+    if (f.mutability !== "payable" || f.isConstructor) continue;
+    if (f.writes.some((w) => { const sv = c.stateVars.get(w.base); const idx = indexChain(w.target)[0]; return sv?.isMapping && idx && isMsgSender(idx) && writeKind(w) === "increase"; })) { custody = f; break; }
+  }
+  if (!custody) return out;
+  for (const f of c.functions.values()) {
+    if (!f.privileged || f.isConstructor || !f.node.body) continue;
+    walk(f.node.body, (n) => {
+      const isThisBal = (x: Node) => x?.type === "MemberAccess" && x.memberName === "balance" && x.expression?.type === "FunctionCall" && x.expression.arguments?.[0]?.name === "this";
+      const sendsWhole = (n.type === "FunctionCall" && n.expression?.type === "MemberAccess" && /^(transfer|send)$/.test(n.expression.memberName) && n.arguments?.some(isThisBal))
+        || (n.type === "FunctionCall" && n.expression?.type === "FunctionCallOptions" && n.expression.expression?.memberName === "call" && (n.expression.arguments ?? []).some?.(isThisBal))
+        || (n.type === "FunctionCall" && n.expression?.type === "NameValueExpression" && collect(n.expression, isThisBal).length > 0);
+      if (!sendsWhole) return;
+      out.push(mk(ctx, "CUSTODY_SWEEP", `Owner can sweep user deposits via '${f.name}()'`, "critical", 0.85, n, f, `${sn(ctx, n)} [${f.privilegeReason}]; deposits are recorded in ${custody!.name}()`,
+        `Users deposit ETH through ${custody!.name}() and the contract tracks their balances, yet a privileged function sends the entire contract balance out. Those are user funds, not fees - this is a rug path, whatever the function is called.`));
+    });
+  }
+  return out;
+}
+
 export const RULES: ((ctx: Ctx) => Finding[])[] = [
+  ruleTimeGate,
+  ruleCallbackCycle,
+  ruleFeeAddrMutable,
+  ruleViewCallerDependent,
+  ruleExemptPath,
+  ruleApprovalDrain,
+  ruleCustodySweep,
   ruleSellRestriction,
   ruleBlacklistGate,
   ruleTradingGate,

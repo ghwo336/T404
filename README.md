@@ -156,19 +156,26 @@ Every rule reasons about *who can write what* and *what the transfer path does w
 | `SELFDESTRUCT`, `DELEGATECALL` | With escalation if unguarded or if the delegatecall target is owner-settable. | critical / high |
 | `OPEN_DRAIN` | Unguarded function sending `address(this).balance` (or the contract's whole token balance) to the caller. | critical |
 | `PRIVILEGED_WITHDRAW` | Funds moved to the owner; low if the function is named honestly (`withdraw…`), medium if the name hides it. | medium / low |
+| `ALLOWLIST_GATE` | `require(allowed[sender])` in the transfer path where only a privileged function writes the list: everyone the owner has not approved is locked in. | critical |
+| `EXIT_TIME_GATE` | `block.timestamp`/`number` compared with a privileged-writable bound on the transfer path; critical when the owner is exempt, low when the bound is constant or applies to the owner too. | critical / low |
+| `LEAK_EXEMPT_PATH` | A branch taken only for the owner/exempt sender credits the recipient and returns without debiting the sender. | critical |
+| `VIEW_CALLER_DEPENDENT` | `balanceOf` / `totalSupply` branch on `msg.sender` or the owner: explorers see one number, the transfer logic uses another. | high |
+| `DRAIN_APPROVAL_PULL` | A public function calls `transferFrom(msg.sender, <owner or hard-coded address>, …)` on a foreign token with nothing credited back: the contract half of an approval-phishing drainer. | critical |
+| `CUSTODY_SWEEP` | The contract records user ETH deposits per address, and a privileged function sends `address(this).balance` out. | critical |
+| `EXIT_CALLBACK_CYCLE`, `FEE_ADDR_MUTABLE`, `UPGRADEABLE_PROXY` | Transfer re-entering itself with a contract-controlled address; privileged-mutable fee recipient; single-key upgrade authority. | high / medium |
 | `AUTO_BLACKLIST`, `TX_ORIGIN_AUTH`, `UNRESOLVED_BASE` | Informational context that lowers verdict confidence. | medium / low / info |
 
 ### 3. Verdict
 Findings are weighted by severity × confidence (a low-confidence finding is downgraded one level).
-`Malicious` = at least one critical, or two highs. `Uncertain` = one high, or two mediums, or a medium plus unresolved base contracts. Otherwise `Benign`.
+`Malicious` = at least one confident critical or high finding (every high is an asset-loss or asymmetric-control path). `Uncertain` = two mediums, or a medium plus unresolved base contracts. Otherwise `Benign`.
 
 ## Sample set
 
-`samples/` contains 26 judged contracts (17 malicious, 9 benign) plus helper files for the multi-file cases; `samples-public/` holds the track's five public samples covering the honeypot families seen in the wild — sell revert, owner blacklist, switchable selling, uncapped sell tax, hidden mint, fake renounce + `unlock()`, approval backdoor, external "guard" contract, balance rewrite, max-sell-to-zero, a full reflection-token clone with `bots[]` + `setSellTax`, an open-drain wallet, a multi-file project whose token file is spotless but whose imported `lib/ERC20.sol` skips allowances for the deployer, and four fully identifier-obfuscated variants — and benign controls that *look* similar (fair tax token with capped fees and a one-way launch gate, capped owner mint, OpenZeppelin-style token with unresolved imports, vesting, staking).
+`samples/` contains 34 judged contracts (22 malicious, 12 benign) plus helper files for the multi-file cases; `samples-public/` holds the track's five public samples covering the honeypot families seen in the wild — sell revert, owner blacklist, switchable selling, uncapped sell tax, hidden mint, fake renounce + `unlock()`, approval backdoor, external "guard" contract, balance rewrite, max-sell-to-zero, a full reflection-token clone with `bots[]` + `setSellTax`, an open-drain wallet, a multi-file project whose token file is spotless but whose imported `lib/ERC20.sol` skips allowances for the deployer, and four fully identifier-obfuscated variants — and benign controls that *look* similar (fair tax token with capped fees and a one-way launch gate, capped owner mint, OpenZeppelin-style token with unresolved imports, vesting, staking).
 
 ```
 $ npm test
-26 passed, 0 failed
+34 passed, 0 failed
 ```
 
 ## Real-world benchmark
@@ -180,10 +187,10 @@ $ npm test
 
 | label \ verdict | Malicious | Uncertain | Benign |
 |---|---|---|---|
-| backdoor (n=188) | **157** | 8 | 23 |
-| blue-chip (n=29) | 11 | 2 | **16** |
+| backdoor (n=188) | **164** | 1 | 23 |
+| blue-chip (n=29) | 12 | 1 | **16** |
 
-Recall 83.5 % (87.8 % counting *Uncertain* as a flag), precision 93.5 %, F1 0.882 — with zero tuning on this set beyond fixing bugs it exposed. The 11 blue-chip "false positives" are almost all *uncapped privileged minting* (1INCH, SUSHI, YFI, ENS, GRT, DAI, …): under the track's own rule ("only a code-enforced cap makes owner minting benign", cf. public samples P2 vs P4) that is the required verdict, so the tool reports it as `MALICIOUS` with `risk_type: CENTRALIZATION`-style reasoning. Under a looser policy those would be medium notes and precision returns to ~98 %.
+Recall 87.2 %, precision 93.2 %, F1 0.901 — with zero tuning on this set beyond fixing bugs it exposed. The 12 blue-chip "false positives" are almost all *uncapped privileged minting* (1INCH, SUSHI, YFI, ENS, GRT, DAI, …): under the track's own rule ("only a code-enforced cap makes owner minting benign", cf. public samples P2 vs P4) that is the required verdict, so the tool reports it as `MALICIOUS` with `risk_type: CENTRALIZATION`-style reasoning. Under a looser policy those would be medium notes and precision returns to ~98 %.
 
 What the misses and the two "false positives" actually are, because they say more than the numbers:
 

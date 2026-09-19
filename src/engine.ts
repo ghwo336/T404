@@ -23,8 +23,8 @@ export function verdictFor(findings: Finding[]): { verdict: Verdict; score: numb
   score = Math.min(100, Math.round(score));
   const unresolved = findings.some((f) => f.id === "UNRESOLVED_BASE");
   let verdict: Verdict;
-  if (crit >= 1 || high >= 2) verdict = "Malicious";
-  else if (high >= 1 || med >= 2 || (unresolved && med >= 1)) verdict = "Uncertain";
+  if (crit >= 1 || high >= 1) verdict = "Malicious"; // any confident critical/high finding is an asset-loss or asymmetric-control path
+  else if (med >= 2 || (unresolved && med >= 1)) verdict = "Uncertain";
   else verdict = "Benign";
   const top = findings.filter((f) => f.severity !== "info").sort(bySeverity).slice(0, 3).map((f) => f.title);
   const summary = verdict === "Benign"
