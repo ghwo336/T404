@@ -10,6 +10,12 @@
   :root { --display:"Space Grotesk", "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif; --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; --bg:#0B0E13; --bg2:#0E1116; --panel:rgba(24,28,35,.72); --panel2:#0A0C10; --border:#262c36; --text:#F4F5F2; --mute:#98A0AC; --red:#FF6B6B; --amber:#F5C451; --green:#3DD68C; --blue:#7CB8FF; --orange:#ff9c6b; }
   * { box-sizing:border-box; }
   html, body { height:100%; margin:0; overflow:hidden; }
+  * { scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.14) transparent; }
+  *::-webkit-scrollbar { width:6px; height:6px; }
+  *::-webkit-scrollbar-track { background:transparent; }
+  *::-webkit-scrollbar-thumb { background:rgba(255,255,255,.14); border-radius:999px; }
+  *::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,.28); }
+  *::-webkit-scrollbar-corner { background:transparent; }
   body { background:var(--bg); color:var(--text); font:14.5px/1.5 "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif; display:flex; flex-direction:column; -webkit-font-smoothing:antialiased; }
   body::before { content:""; position:fixed; inset:0; pointer-events:none; z-index:0; background:radial-gradient(900px 500px at 15% -10%, rgba(255,107,107,.14), transparent 60%), radial-gradient(700px 400px at 90% 110%, rgba(124,184,255,.10), transparent 60%); }
   body::after { content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.045; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
