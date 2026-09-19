@@ -61,7 +61,7 @@ export class Resolver {
     }
     walk(pf.ast, (n) => { n.__file = abs; });
     for (const c of pf.ast.children ?? []) {
-      if (c.type === "ImportDirective" && typeof c.path === "string") {
+      if (c?.type === "ImportDirective" && typeof c.path === "string") {
         pf.imports.push(c.path);
         pf.resolved.set(c.path, this.resolveImport(c.path, abs));
       }

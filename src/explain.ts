@@ -163,6 +163,48 @@ export function attackPath(f: Finding): string[] | undefined {
         "The value transfer that the check protects executes with the attacker-chosen parameters.",
         "Result: a phishable guard on money - the funds can be moved by anyone who can get the owner to click.",
       ];
+    case "TRANSFER_INFLATION":
+      return [
+        "Every transfer debits the sender once and credits the recipient the full amount - so far conserving.",
+        `Then ${L(at)}: \`${at.snippet}\` credits a third slot as well, out of nothing.`,
+        "totalSupply() never moves, so the inflation is invisible to explorers and to anyone checking supply against holdings.",
+        "Result: a slot that grows with every trade, ready to be dumped into the pool at the operator's convenience.",
+      ];
+    case "HIDDEN_ROLE":
+      return [
+        "Holders check owner() on the explorer and see a normal-looking (perhaps renounced) owner.",
+        `The privileged functions never consult that variable; they check ${at.snippet ? "`" + at.snippet + "`" : "a private address"} instead (${L(at)}).`,
+        "transferOwnership()/renounceOwnership() only touch the decorative owner, so the hidden key survives them.",
+        "Result: whoever holds the hidden key retains every backdoor while the visible ownership story says otherwise.",
+      ];
+    case "PONZI_SHAPE":
+      return [
+        "Participants pay in; their address is queued. No external yield source exists.",
+        `${fnOf(at)} pays a queued address from the contract balance: ${L(at)}: \`${at.snippet}\`.`,
+        "Each payout is funded only by later deposits, so the queue only clears while new money keeps arriving.",
+        "Result: early entrants are paid with later entrants' money; when inflow stops, everyone still queued loses their deposit.",
+      ];
+    case "HIDDEN_CODE_LAYOUT":
+      return [
+        "The source looks ordinary in the explorer's verified-code view.",
+        `Line ${at.line} continues far to the right, past the visible width, where \`${at.snippet}\` sits.`,
+        "A reviewer reading the visible column concludes the function is harmless.",
+        "Result: the hidden statement (typically a transfer to the deployer or an owner reassignment) runs on every call.",
+      ];
+    case "PREEMPTIVE_DRAIN":
+      return [
+        "The victim sees a 'redeem'/'giveaway' function that transfers the contract balance to msg.sender once a deposit threshold is met.",
+        `They send ETH. One statement earlier - ${L(at)}: \`${at.snippet}\` - the whole balance (including their deposit) already went to the owner.`,
+        "The visible payout line then transfers a balance of zero; the transaction still succeeds, so nothing looks wrong on-chain.",
+        "Result: every 'redeem' is a donation to the deployer.",
+      ];
+    case "SHADOWED_AUTH":
+      return [
+        "The derived contract re-declares a state variable with the same name as the base's authority variable, creating a second storage slot.",
+        `A function in the derived contract (${L(at)}) lets callers write the shadow copy - it looks like 'become the owner'.`,
+        "The base modifier that guards withdrawals binds to the original slot, which the new 'owner' never touched.",
+        "Result: victims who pay to take control gain a variable that nothing reads; the deployer still passes every onlyOwner check and sweeps the pool.",
+      ];
     default:
       return undefined;
   }

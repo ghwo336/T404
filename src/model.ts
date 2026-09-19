@@ -68,6 +68,7 @@ export interface Contract {
   transferPath: Set<string>;
   coreTransferPath: Set<string>; // name-seeded only (transfer/_transfer/...) + callees; excludes mint/burn/upgrade helpers that merely write balances
   privilegedFunctions: Func[];
+  shadowedVars: { name: string; base: string; derived: string; node: Node }[]; // same-named state var redeclared in a derived contract (two slots, one name)
 }
 
 export const TRANSFER_FN = /^_?(transfer|transferFrom|_?update|_?beforeTokenTransfer|_?afterTokenTransfer|_?transferStandard|_?tokenTransfer|_?transferTokens|_?basicTransfer|_?transferFrom|_?standardTransfer|_?transferToExcluded|_?transferFromExcluded|_?transferBothExcluded|_?takeFee|_?takeTax|_?swapAndLiquify|_?move|_?send)$/i;
@@ -174,7 +175,9 @@ function modifierPrivileged(m: Node, ownerVars: Set<string>): string | null {
       reason = `${calleeName(n)}()`;
     }
   });
-  if (!reason && PRIV_MODIFIER_NAME.test(m.name)) reason = `modifier name '${m.name}' (body not conclusive)`;
+  // a modifier whose only require() is a numeric check on a mapping[msg.sender] (deposits, balances) is user-satisfiable, not privilege
+  const userGate = !reason && collect(m.body, (n) => isCallTo(n, ["require"]) && n.arguments?.[0]?.type === "BinaryOperation" && /^(>|>=|<|<=|!=)$/.test(n.arguments[0].operator) && [n.arguments[0].left, n.arguments[0].right].some((x: Node) => x?.type === "IndexAccess" && isMsgSender(x.index))).length > 0;
+  if (!reason && !userGate && PRIV_MODIFIER_NAME.test(m.name)) reason = `modifier name '${m.name}' (body not conclusive)`;
   return reason;
 }
 
@@ -210,6 +213,7 @@ export function buildModels(sourceUnits: { file: string; ast: Node }[]): Contrac
   const raw = new Map<string, { node: Node; file: string }>();
   for (const su of sourceUnits) {
     for (const c of su.ast.children ?? []) {
+      if (!c) continue;
       if (c.type === "ContractDefinition") raw.set(c.name, { node: c, file: su.file });
     }
   }
@@ -260,6 +264,7 @@ export function buildModels(sourceUnits: { file: string; ast: Node }[]): Contrac
       modifiers: new Map(),
       functions: new Map(),
       allFunctions: [],
+      shadowedVars: [],
       ownerVars: new Set(),
       balanceVars: new Set(),
       allowanceVars: new Set(),
@@ -279,7 +284,11 @@ export function buildModels(sourceUnits: { file: string; ast: Node }[]): Contrac
       const cnode = raw.get(cn)!.node;
       for (const sn of cnode.subNodes ?? []) {
         if (sn.type === "StateVariableDeclaration") {
-          for (const v of sn.variables ?? []) c.stateVars.set(v.name, stateVarFromNode(v, cn));
+          for (const v of sn.variables ?? []) {
+            const prev = c.stateVars.get(v.name);
+            if (prev && prev.contract !== cn) c.shadowedVars.push({ name: v.name, base: prev.contract, derived: cn, node: v });
+            c.stateVars.set(v.name, stateVarFromNode(v, cn));
+          }
         }
       }
     }
@@ -375,7 +384,7 @@ export function buildModels(sourceUnits: { file: string; ast: Node }[]): Contrac
       for (const sn of cnode.subNodes ?? []) {
         if (sn.type !== "FunctionDefinition") continue;
         const isCtor = !!sn.isConstructor || sn.name === null && !sn.isFallback && !sn.isReceiveEther && sn.kind === "constructor";
-        const name = sn.name ?? (sn.isFallback ? "fallback" : sn.isReceiveEther ? "receive" : "constructor");
+        const name = sn.name || (sn.isFallback ? "fallback" : sn.isReceiveEther ? "receive" : "constructor");
         const params = (sn.parameters ?? []).map((p: Node) => p.name).filter(Boolean);
         const f: Func = {
           name,
@@ -408,7 +417,10 @@ export function buildModels(sourceUnits: { file: string; ast: Node }[]): Contrac
           f.privileged = !!f.privilegeReason;
         }
         c.allFunctions.push(f);
-        c.functions.set(name, f); // derived overrides base (chain is base-first)
+        // derived overrides base (chain is base-first); overloads inside the same contract are kept under name#n so rules see every body
+        let key = name;
+        for (let i = 2; c.functions.has(key) && c.functions.get(key)!.contract === f.contract; i++) key = `${name}#${i}`;
+        c.functions.set(key, f);
       }
     }
     for (const f of c.functions.values()) {

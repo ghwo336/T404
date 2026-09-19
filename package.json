@@ -9,7 +9,8 @@
     "test": "tsx test/run.ts",
     "prepare": "npm run build",
     "bench": "tsc -p bench/tsconfig.json && node bench/out/bench/run.js",
-    "web": "node web/build.mjs"
+    "web": "node web/build.mjs",
+    "baybench": "tsc -p tsconfig.json && node dist/baybench.js"
   },
   "keywords": [],
   "author": "",

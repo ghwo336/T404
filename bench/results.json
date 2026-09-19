@@ -73,9 +73,9 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 34,
+    "score": 76,
     "note": "",
-    "top": "UNCAPPED_FEE,BALANCE_MANIPULATION",
+    "top": "CUSTODY_SWEEP,UNCAPPED_FEE",
     "parseErrors": 0
   },
   {
@@ -105,7 +105,7 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BLACKLIST_GATE,BALANCE_MANIPULATION",
+    "top": "BLACKLIST_GATE,CUSTODY_SWEEP",
     "parseErrors": 0
   },
   {
@@ -183,9 +183,9 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 34,
+    "score": 76,
     "note": "",
-    "top": "UNCAPPED_FEE,BALANCE_MANIPULATION",
+    "top": "CUSTODY_SWEEP,UNCAPPED_FEE",
     "parseErrors": 0
   },
   {
@@ -383,9 +383,9 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 42,
+    "score": 82,
     "note": "",
-    "top": "HIDDEN_MINT,TRADING_GATE",
+    "top": "HIDDEN_MINT,OPEN_MINT",
     "parseErrors": 0
   },
   {
@@ -423,9 +423,9 @@
     "label": "Malicious",
     "category": "DestoryToken",
     "verdict": "Malicious",
-    "score": 42,
+    "score": 82,
     "note": "",
-    "top": "HIDDEN_MINT,TRADING_GATE",
+    "top": "HIDDEN_MINT,OPEN_MINT",
     "parseErrors": 0
   },
   {
@@ -652,10 +652,10 @@
     "address": "0x0b6e701cd51a9e1b5829a4c4fe2130d60c0c4f6c",
     "label": "Malicious",
     "category": "FreezeAccount",
-    "verdict": "Benign",
-    "score": 2,
+    "verdict": "Malicious",
+    "score": 21,
     "note": "",
-    "top": "PRIVILEGED_WITHDRAW,TRADING_GATE",
+    "top": "ALLOWLIST_GATE,PRIVILEGED_WITHDRAW",
     "parseErrors": 0
   },
   {
@@ -1183,9 +1183,9 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 41,
+    "score": 82,
     "note": "",
-    "top": "HIDDEN_MINT",
+    "top": "FAKE_RENOUNCE,HIDDEN_MINT",
     "parseErrors": 0
   },
   {
@@ -1643,9 +1643,9 @@
     "label": "Malicious",
     "category": "DisableTransfer",
     "verdict": "Malicious",
-    "score": 42,
+    "score": 82,
     "note": "",
-    "top": "HIDDEN_MINT,TRADING_GATE",
+    "top": "HIDDEN_MINT,OPEN_MINT",
     "parseErrors": 0
   },
   {
@@ -1662,10 +1662,10 @@
     "address": "0x17d30c85376bc2c39edc1da179162d308559a3c4",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Benign",
-    "score": 2,
+    "verdict": "Malicious",
+    "score": 22,
     "note": "",
-    "top": "TRADING_GATE",
+    "top": "HIDDEN_ROLE,TRADING_GATE",
     "parseErrors": 0
   },
   {
@@ -1682,10 +1682,10 @@
     "address": "0x031e0c6a7c91df1bc171d33cccc6988fd2ddeb6f",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Benign",
-    "score": 2,
+    "verdict": "Malicious",
+    "score": 22,
     "note": "",
-    "top": "TRADING_GATE",
+    "top": "HIDDEN_ROLE,TRADING_GATE",
     "parseErrors": 0
   },
   {
@@ -1723,9 +1723,9 @@
     "label": "Malicious",
     "category": "DisableTransfer",
     "verdict": "Malicious",
-    "score": 42,
+    "score": 82,
     "note": "",
-    "top": "HIDDEN_MINT,TRADING_GATE",
+    "top": "HIDDEN_MINT,OPEN_MINT",
     "parseErrors": 0
   },
   {
@@ -1742,10 +1742,10 @@
     "address": "0x9954ff0295443c01f562dccb1f893be464e01986",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Benign",
-    "score": 2,
+    "verdict": "Malicious",
+    "score": 22,
     "note": "",
-    "top": "TRADING_GATE",
+    "top": "HIDDEN_ROLE,TRADING_GATE",
     "parseErrors": 0
   },
   {
@@ -1792,10 +1792,10 @@
     "address": "0xbc2faad1ec407571249b0e874a9abd840111389b",
     "label": "Malicious",
     "category": "DisableTransfer",
-    "verdict": "Benign",
-    "score": 2,
+    "verdict": "Malicious",
+    "score": 22,
     "note": "",
-    "top": "TRADING_GATE",
+    "top": "HIDDEN_ROLE,TRADING_GATE",
     "parseErrors": 0
   },
   {
@@ -1933,9 +1933,9 @@
     "label": "Benign",
     "category": "AAVE",
     "verdict": "Benign",
-    "score": 2,
+    "score": 4,
     "note": "multi-file (19) proxy->0x5d4aa78b08bc7c530e21bf7447988b1be7991322",
-    "top": "UPGRADEABLE_PROXY",
+    "top": "UPGRADEABLE_PROXY,UPGRADEABLE_PROXY",
     "parseErrors": 0
   },
   {
@@ -2153,9 +2153,9 @@
     "label": "Benign",
     "category": "CRO",
     "verdict": "Malicious",
-    "score": 41,
+    "score": 82,
     "note": "",
-    "top": "HIDDEN_MINT",
+    "top": "FAKE_RENOUNCE,HIDDEN_MINT",
     "parseErrors": 0
   },
   {

@@ -170,22 +170,37 @@ Every rule reasons about *who can write what* and *what the transfer path does w
 | `RIGGED_PAYOUT` | Payout to the caller gated on equality with a stored hash/answer that a non-constructor function can rewrite — "guess the password / quiz" honeypots. | critical |
 | `PAYMENT_HIJACK` | A public payable function (`SecurityUpdate()`, `Claim()`…) forwards `msg.value` to the owner and credits the caller nothing. | high |
 | `OPAQUE_DEPENDENCY` | The user's withdrawal path calls a contract-typed state variable that was set from a constructor argument — the "private bank + logger" honeypot. | high |
+| `TRANSFER_INFLATION` | The transfer path debits the sender once, credits the recipient the full amount *and* credits a third slot — supply created on every trade with `totalSupply()` frozen. | critical |
+| `HIDDEN_ROLE` / `SHADOWED_AUTH` | A public `owner` that no privileged function reads while a private address gates them; a base authority variable re-declared in the derived contract so "becoming owner" writes a dead slot (HoneyBadger inheritance disorder). | high / critical |
+| `PREEMPTIVE_DRAIN`, `HIDDEN_CODE_LAYOUT` | Whole balance sent to the owner one statement before the caller's "reward"; a statement pushed off-screen by 100+ spaces of padding (HoneyBadger hidden transfer). | critical / high |
+| `PONZI_SHAPE` | Addresses queued on pay-in and later paid from the contract balance with no yield source — capped at `Uncertain`. | high (→ Uncertain) |
 | `REENTRANCY`, `TX_ORIGIN_VALUE` | Exploitable bugs on the value path (gas-forwarding send before the balance write; `tx.origin` guarding a transfer). Flagged as *vulnerability*: the verdict is capped at `Uncertain` because funds are exposed without proof of intent. | high (→ Uncertain) |
 | `EXIT_CALLBACK_CYCLE`, `FEE_ADDR_MUTABLE`, `UPGRADEABLE_PROXY` | Transfer re-entering itself with a contract-controlled address; privileged-mutable fee recipient; single-key upgrade authority. | high / medium |
 | `AUTO_BLACKLIST`, `TX_ORIGIN_AUTH`, `UNRESOLVED_BASE` | Informational context that lowers verdict confidence. | medium / low / info |
 
 ### 3. Verdict
 Findings are weighted by severity × confidence (a low-confidence finding is downgraded one level).
-`Malicious` = at least one confident critical or high finding (every high is an asset-loss or asymmetric-control path). `Uncertain` = an exploitable vulnerability on the value path (reentrancy, `tx.origin` guard), two mediums, or a medium plus unresolved base contracts. Otherwise `Benign`.
+`Malicious` = at least one confident critical or high finding (every high is an asset-loss or asymmetric-control path). `Uncertain` = an exploitable vulnerability on the value path (reentrancy, `tx.origin` guard), a single-key upgradeable proxy, a Ponzi payout shape, a file that only partially parses, two mediums, or a medium plus unresolved base contracts. Otherwise `Benign`.
 
 ## Sample set
 
-`samples/` contains 52 judged contracts (33 malicious, 17 benign, 2 uncertain) plus helper files for the multi-file cases; `samples-public/` holds the track's five public samples covering the honeypot families seen in the wild — sell revert, owner blacklist, switchable selling, uncapped sell tax, hidden mint, fake renounce + `unlock()`, approval backdoor, external "guard" contract, balance rewrite, max-sell-to-zero, a full reflection-token clone with `bots[]` + `setSellTax`, an open-drain wallet, a multi-file project whose token file is spotless but whose imported `lib/ERC20.sol` skips allowances for the deployer, four fully identifier-obfuscated variants, and the classic ETH honeypot families (rigged password/quiz games, the multiplicator, "security update" payment hijack, private-bank logger, NFT approval harvester, withdraw-redirect bank, XOR-obfuscated fee recipient, hidden hard-coded-caller branch) — and benign controls that *look* similar (fair tax token with capped fees and a one-way launch gate, capped owner mint, OpenZeppelin-style token with unresolved imports, vesting, staking, a proper vault, escrow, multisig, WETH9). `samples/uncertain/` holds two textbook *vulnerable* contracts (reentrant store, `tx.origin` wallet) that must come back `Uncertain`, not `Malicious`.
+`samples/` contains 61 judged contracts (39 malicious, 18 benign, 4 uncertain) plus helper files for the multi-file cases; `samples-public/` holds the track's five public samples covering the honeypot families seen in the wild — sell revert, owner blacklist, switchable selling, uncapped sell tax, hidden mint, fake renounce + `unlock()`, approval backdoor, external "guard" contract, balance rewrite, max-sell-to-zero, a full reflection-token clone with `bots[]` + `setSellTax`, an open-drain wallet, a multi-file project whose token file is spotless but whose imported `lib/ERC20.sol` skips allowances for the deployer, four fully identifier-obfuscated variants, and the classic ETH honeypot families (rigged password/quiz games, the multiplicator, "security update" payment hijack, private-bank logger, NFT approval harvester, withdraw-redirect bank, XOR-obfuscated fee recipient, hidden hard-coded-caller branch) — and benign controls that *look* similar (fair tax token with capped fees and a one-way launch gate, capped owner mint, OpenZeppelin-style token with unresolved imports, vesting, staking, a proper vault, escrow, multisig, WETH9). `samples/uncertain/` holds two textbook *vulnerable* contracts (reentrant store, `tx.origin` wallet) that must come back `Uncertain`, not `Malicious`.
 
 ```
 $ npm test
-52 passed, 0 failed
+61 passed, 0 failed
 ```
+
+## Team harness (BAYBENCH)
+
+`npm run baybench -- <input-dir> <out>/results.json` emits the `results.json` shape of the team's [BAYBENCH](https://github.com/sdh2222/trust404) harness, mapping noexit rule ids onto the §7 catalog (`EXIT_ADDR_GATE`, `BAL_PRIV_MINT`, `HONEYPOT_LEGACY`, …) with families A–G and HIGH/MED/INFO severities. Register it in `baybench/tools.yaml`:
+
+```yaml
+  - name: noexit
+    cmd: "node /path/to/noexit/dist/baybench.js {input} {output}/results.json"
+```
+
+Current standing on that harness (verdict score, `bench run noexit --no-docker`): tier1_pairs 0.90 (61 cases; the remaining gaps are policy — the harness labels symmetric pause/limit/time-gate traps `Malicious` and role-gated blacklists with OpenZeppelin `AccessControl` `Benign`, whereas noexit follows the track's own boundary rules 1 and 4), tier2_realworld 473/529 labeled-malicious CRPWarner + HoneyBadger + Pied-Piper contracts flagged (89 %; a further 162 of the 250 "non-compiling fixture" files, which the harness expects as `Uncertain`, are still judged `Malicious` because noexit never needs solc), tier3_benign_risky 6/8 (the two "misses" are Bancor SmartToken and Lido's MiniMe — uncapped controller minting, which the track's rule 2 classifies as `MALICIOUS`).
 
 ## Real-world benchmark
 
@@ -196,10 +211,10 @@ $ npm test
 
 | label \ verdict | Malicious | Uncertain | Benign |
 |---|---|---|---|
-| backdoor (n=188) | **164** | 1 | 23 |
+| backdoor (n=188) | **169** | 1 | 18 |
 | blue-chip (n=29) | 12 | 1 | **16** |
 
-Recall 87.2 %, precision 93.2 %, F1 0.901 — with zero tuning on this set beyond fixing bugs it exposed. The 12 blue-chip "false positives" are almost all *uncapped privileged minting* (1INCH, SUSHI, YFI, ENS, GRT, DAI, …): under the track's own rule ("only a code-enforced cap makes owner minting benign", cf. public samples P2 vs P4) that is the required verdict, so the tool reports it as `MALICIOUS` with `risk_type: CENTRALIZATION`-style reasoning. Under a looser policy those would be medium notes and precision returns to ~98 %.
+Recall 89.9 %, precision 93.4 %, F1 0.916 — with zero tuning on this set beyond fixing bugs it exposed. The 12 blue-chip "false positives" are almost all *uncapped privileged minting* (1INCH, SUSHI, YFI, ENS, GRT, DAI, …): under the track's own rule ("only a code-enforced cap makes owner minting benign", cf. public samples P2 vs P4) that is the required verdict, so the tool reports it as `MALICIOUS` with `risk_type: CENTRALIZATION`-style reasoning. Under a looser policy those would be medium notes and precision returns to ~98 %.
 
 What the misses and the two "false positives" actually are, because they say more than the numbers:
 

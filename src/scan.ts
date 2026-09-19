@@ -60,6 +60,7 @@ export function scanFile(file: string, resolver?: Resolver, sink?: { contracts: 
   }
   all.sort(bySeverity);
   const v = verdictFor(all);
+  if (v.verdict === "Benign" && parseErrors.length) { v.verdict = "Uncertain"; v.summary = `Could not fully parse the file (${parseErrors[0]}); no verdict.`; }
   const summary = targets.length ? v.summary : "No deployable contract in this file (interfaces / libraries / abstract only).";
   return {
     file, verdict: v.verdict, score: v.score, parseErrors,

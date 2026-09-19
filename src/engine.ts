@@ -56,7 +56,7 @@ export function parseSource(file: string, source: string): Parsed {
     return pf;
   }
   walk(pf.ast, (n) => { n.__file = file; });
-  for (const c of pf.ast.children ?? []) if (c.type === "ImportDirective" && typeof c.path === "string") pf.imports.push(c.path);
+  for (const c of pf.ast.children ?? []) if (c?.type === "ImportDirective" && typeof c.path === "string") pf.imports.push(c.path);
   return pf;
 }
 
@@ -125,6 +125,7 @@ export function analyze(entry: string, sources: Map<string, string>, cache?: Map
   }
   all.sort(bySeverity);
   const v = verdictFor(all);
+  if (v.verdict === "Benign" && parseErrors.length) { v.verdict = "Uncertain"; v.summary = `Could not fully parse the file (${parseErrors[0]}); no verdict.`; }
   return { file: entry, verdict: v.verdict, score: v.score, parseErrors, imports: { resolved: closure.slice(1).map((p) => p.file), unresolved }, contracts, findings: all, summary: targets.length ? v.summary : "No deployable contract in this file (interfaces / libraries / abstract only)." };
 }
 

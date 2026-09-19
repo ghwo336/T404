@@ -467,6 +467,12 @@ export function ruleTradingGate(ctx: Ctx): Finding[] {
         `${sn(ctx, gate.cond)}  |  ${v.name} set in ${setters[0].fn.name}() [${setters[0].fn.privilegeReason}]`,
         `The transfer path requires ${v.name}, and a privileged function can flip it back to false. ${sellOnly ? "Because the check only applies to transfers into the pair, buys keep working while sells are halted - a switchable honeypot." : "Holders can be locked in indefinitely."}`,
         [loc(ctx, setters[0].w.node, setters[0].fn)]));
+    } else if (identifiers(gate.cond).some((i) => i !== v.name && c.stateVars.get(i)?.isMapping && /bool/.test(c.stateVars.get(i)!.valueType ?? "") && privilegedSetters(c, i).some(({ fn, w }) => valueFromParam(fn, w) || indexChain(w.target).some((ix) => identifiers(ix).some((p) => fn.params.includes(p)))))) {
+      const lst = identifiers(gate.cond).find((i) => i !== v.name && c.stateVars.get(i)?.isMapping)!;
+      out.push(mk(ctx, "ALLOWLIST_GATE", `Until the owner releases trading, only addresses on '${lst}' can transfer`, "high", 0.75, gate.node, gate.fn,
+        `${sn(ctx, gate.cond)}  |  ${lst} written by ${privilegedSetters(c, lst).map((x) => x.fn.name + "()").join(", ")}; ${v.name} flipped in ${setters[0].fn.name}()`,
+        `A launch lock is symmetric only if nobody can move. Here a privileged list exempts chosen addresses (the deployer's own wallets, a 'crowdsale' contract) while every other holder is frozen until a release that the same insiders control and may never trigger. Asymmetric by construction.`,
+        [loc(ctx, setters[0].w.node, setters[0].fn)]));
     } else {
       out.push(mk(ctx, "TRADING_GATE", "One-way launch gate (owner enables trading once)", "low", 0.7, gate.node, gate.fn,
         `${sn(ctx, gate.cond)}  |  ${v.name} is only ever set to its non-blocking value in ${setters[0].fn.name}()`,
@@ -559,7 +565,8 @@ export function ruleHiddenMint(ctx: Ctx): Finding[] {
     const m = isMintLike(c, f);
     if (!m) continue;
     const named = /mint|issue|airdrop|reward|distribute|emit/i.test(f.name);
-    const capped = named && upperBound(c, f, [...f.params, ...c.supplyVars]) !== "unbounded";
+    const cappedBase = c.bases.some((b) => /^ERC20Capped(Upgradeable)?$/.test(b)) || c.unknownBases.some((b) => /^ERC20Capped(Upgradeable)?$/.test(b)); // cap enforced in the (standard) base _mint/_update
+    const capped = named && (cappedBase || upperBound(c, f, [...f.params, ...c.supplyVars]) !== "unbounded");
     if (f.privileged && capped) {
       out.push(mk(ctx, "OWNER_MINT", "Owner can mint within a hard cap", "low", 0.8, m.node, f, `${sn(ctx, m.node)} in ${f.name}() [${f.privilegeReason}]`, `Minting is privileged but bounded by a supply cap check in the same function.`));
       continue;
@@ -679,14 +686,54 @@ export function ruleOwnership(ctx: Ctx): Finding[] {
         `The previous owner address is stashed before ownership is set to zero. A companion function (typically lock()/unlock()/getUnlockTime) can restore it, so 'renounced' is cosmetic.`));
     }
   }
+  // authority variables: every state address the privilege checks compare msg.sender against
+  const authorityVars = new Set<string>();
+  for (const f of c.functions.values()) for (const m of f.privilegeReason.matchAll(/msg\.sender vs ([A-Za-z_$][\w$]*)(?!\()/g)) if (c.stateVars.has(m[1])) authorityVars.add(m[1]);
+  if (ren && ren.node.body && !ren.callsSuper) {
+    const zeroed = new Set(ren.writes.filter((w) => w.value && isZeroAddress(w.value)).map((w) => w.base));
+    const touched = new Set(ren.writes.map((w) => w.base));
+    const clears = zeroed.size > 0 || [...ren.calls].some((x) => /_transferOwnership|_setOwner/i.test(x));
+    const survivors = [...authorityVars].filter((v) => !touched.has(v) && !(clears && zeroed.size === 0 && c.ownerVars.has(v) && /owner/i.test(v)));
+    const users = [...c.functions.values()].filter((f) => f.name !== ren.name && survivors.some((v) => f.privilegeReason.includes(`msg.sender vs ${v}`)));
+    if (survivors.length && users.length && clears) {
+      out.push(mk(ctx, "FAKE_RENOUNCE", `renounceOwnership() clears the owner but '${survivors[0]}' keeps its powers`, "critical", 0.85, ren.node, ren,
+        `zeroed: ${[...zeroed].join(", ")}; still authorising ${users.map((f) => f.name + "()").join(", ")}: ${survivors.join(", ")}`,
+        `Explorers will show the token as renounced, yet a second authority variable that the renounce never touches still gates ${users.map((f) => f.name + "()").join(", ")}. The 'renounce' is cosmetic - the deployer keeps the backdoor.`, users.map((f) => loc(ctx, f.node, f))));
+    }
+  }
+  // hidden role: a visible owner that authorises nothing, while a private/internal address gates privileged functions
+  {
+    const visibleOwners = [...c.ownerVars].filter((v) => /^(public)$/.test(c.stateVars.get(v)?.node?.visibility ?? "") && !/^_/.test(v));
+    const ownerUsed = [...c.functions.values()].some((f) => visibleOwners.some((v) => f.privilegeReason.includes(`msg.sender vs ${v}`)) || /owner\(\)|_checkOwner|onlyOwner/i.test(f.privilegeReason));
+    const hidden = [...authorityVars].filter((v) => !visibleOwners.includes(v) && /^(private|internal|default)$/.test(c.stateVars.get(v)?.node?.visibility ?? "default"));
+    if (visibleOwners.length && !ownerUsed && hidden.length) {
+      const users = [...c.functions.values()].filter((f) => hidden.some((v) => f.privilegeReason.includes(`msg.sender vs ${v}`)));
+      if (users.length) out.push(mk(ctx, "HIDDEN_ROLE", `Public '${visibleOwners[0]}' is decorative; the real authority is hidden '${hidden[0]}'`, "high", 0.8, c.stateVars.get(hidden[0])!.node, users[0],
+        `${users.map((f) => f.name + "()").join(", ")} gated by ${hidden.join(", ")}; ${visibleOwners.join(", ")} authorises nothing`,
+        `The contract exposes an owner variable that explorers and holders will check, but no privileged function actually uses it. Control sits in a non-public address that renounce/transferOwnership never touch - a hidden role designed to survive scrutiny.`, users.map((f) => loc(ctx, f.node, f))));
+    }
+  }
+  const INIT_FN = /^_?(initialize|init|initializer|setup|configure|_initialize|__Ownable_init|__Ownable_init_unchained)$/i;
   for (const f of c.functions.values()) {
-    if (f.isConstructor || OWNERSHIP_FN.test(f.name)) continue;
+    if (f.isConstructor) continue;
+    if (OWNERSHIP_FN.test(f.name)) {
+      // post-deploy initializer that hands the owner slot to msg.sender with no initializer guard = open takeover
+      if (!INIT_FN.test(f.name) || f.privileged || !/^(public|external|default)$/.test(f.visibility) || f.modifiers.some((m) => /initializer|onlyInitializing|reinitializer/i.test(m))) continue;
+      const w = ownerWritten(f).find((x) => x.value && (isMsgSender(x.value) || identifiers(x.value).some((i) => f.params.includes(i))));
+      if (!w) continue;
+      const guarded = collect(f.node.body, (x) => isCallTo(x, ["require"]) && x.arguments?.[0] && identifiers(x.arguments[0]).some((i) => /init|setup|configured|owner|_owner/i.test(i) || c.ownerVars.has(i))).length > 0;
+      if (guarded) continue;
+      out.push(mk(ctx, "OPEN_OWNER_TAKEOVER", `Anyone can become owner via '${f.name}()' (unguarded re-initializer)`, "critical", 0.85, w.node, f, `${sn(ctx, w.node)} in ${f.name}()`,
+        `A public initializer writes the owner slot and nothing stops it from being called again after deployment - no 'initialized' flag, no initializer modifier, no owner check. Whoever calls it next owns every privileged function.`));
+      continue;
+    }
     for (const w of ownerWritten(f)) {
       const fromBackup = w.value && identifiers(w.value).some((i) => /previous|_prev|backup|old/i.test(i) || (c.stateVars.get(i)?.typeStr === "address" && !c.ownerVars.has(i)));
       const open = !f.privileged && /^(public|external|default)$/.test(f.visibility);
       // renounce / transferOwnership by shape: privileged, value is address(0) or a parameter
-      if (f.privileged && w.value && (isZeroAddress(w.value) || identifiers(w.value).every((i) => f.params.includes(i)))) continue;
-      out.push(mk(ctx, open ? "OPEN_OWNER_TAKEOVER" : "HIDDEN_OWNER_TRANSFER", open ? `Anyone can become owner via '${f.name}()'` : fromBackup ? `Ownership restored from backup in '${f.name}()'` : `Owner reassigned in unexpected function '${f.name}()'`, open ? "critical" : "high", 0.8, w.node, f,
+      const literalAddr = w.value?.type === "NumberLiteral" || (w.value?.type === "FunctionCall" && w.value.arguments?.[0]?.type === "NumberLiteral" && !isZeroAddress(w.value));
+      if (f.privileged && w.value && !literalAddr && (isZeroAddress(w.value) || identifiers(w.value).every((i) => f.params.includes(i)))) continue;
+      out.push(mk(ctx, open ? "OPEN_OWNER_TAKEOVER" : "HIDDEN_OWNER_TRANSFER", open ? `Anyone can become owner via '${f.name}()'` : literalAddr ? `Owner silently set to a hard-coded address inside '${f.name}()'` : fromBackup ? `Ownership restored from backup in '${f.name}()'` : `Owner reassigned in unexpected function '${f.name}()'`, open || literalAddr ? "critical" : "high", literalAddr ? 0.9 : 0.8, w.node, f,
         `${sn(ctx, w.node)} in ${f.name}()${f.privileged ? ` [${f.privilegeReason}]` : ""}`,
         open ? `An unguarded public function writes the owner variable. Any address can seize control.` : fromBackup ? `This is the second half of a fake renounce: a stashed address is written back into the owner slot.` : `Ownership changes outside transferOwnership/renounceOwnership are hidden from anyone auditing the standard functions.`));
     }
@@ -700,6 +747,23 @@ export function ruleDangerousOps(ctx: Ctx): Finding[] {
   for (const f of c.functions.values()) {
     if (!f.node.body) continue;
     walk(f.node.body, (n) => {
+      // inline-assembly proxy: delegatecall(gas(), impl, ...) where impl is a local loaded from a state slot
+      if (n.type === "AssemblyCall" && n.functionName === "delegatecall") {
+        const tgt = n.arguments?.[1];
+        const tname: string | null = tgt?.type === "AssemblyCall" && !tgt.arguments?.length ? tgt.functionName : tgt?.type === "Identifier" ? tgt.name : null;
+        let sv: string | null = tname && c.stateVars.has(tname) ? tname : null;
+        if (!sv && tname) {
+          const decl = collect(f.node.body, (x) => x.type === "VariableDeclarationStatement" && (x.variables ?? []).some((v: Node) => v?.name === tname))[0];
+          const from = decl?.initialValue && identifiers(decl.initialValue).find((i) => c.stateVars.has(i));
+          if (from) sv = from;
+        }
+        const adminSettable = !!sv && privilegedSetters(c, sv).length > 0;
+        const pf = mk(ctx, "UPGRADEABLE_PROXY", adminSettable ? "Upgradeable proxy whose implementation a single privileged key can swap" : "Upgradeable proxy: logic lives in another contract", adminSettable ? "high" : "low", 0.8, n, f,
+          `${sn(ctx, n)} in ${f.name}()${sv ? `; target from ${sv}` : ""}`, `Assembly delegatecall proxy. The implementation decides the real behaviour and is not part of this source${adminSettable ? "; a single key can replace it at any time, so nothing about the contract's behaviour is fixed" : ""}.`);
+        if (adminSettable) pf.vulnerability = true;
+        out.push(pf);
+        return;
+      }
       if (isCallTo(n, ["selfdestruct", "suicide"])) {
         const open = !f.privileged && /^(public|external|default)$/.test(f.visibility);
         out.push(mk(ctx, "SELFDESTRUCT", open ? "Unguarded selfdestruct" : "Owner can selfdestruct the contract", open ? "critical" : "high", 0.9, n, f,
@@ -713,8 +777,10 @@ export function ruleDangerousOps(ctx: Ctx): Finding[] {
         const proxyShape = f.name === "fallback" || /^_?(delegate|fallback|_implementation|delegateTo|_delegateTo)$/i.test(f.name) || (target?.type === "FunctionCall" && /implementation/i.test(calleeName(target) ?? "")) || (tid && /implementation|logic/i.test(tid));
         if (!isThis && proxyShape) {
           const adminSettable = tid && privilegedSetters(c, tid).length > 0;
-          out.push(mk(ctx, "UPGRADEABLE_PROXY", adminSettable ? "Upgradeable proxy whose implementation a single privileged key can swap" : "Upgradeable proxy: logic can be replaced by the proxy admin", adminSettable ? "medium" : "low", 0.8, n, f,
-            `${sn(ctx, n)} in ${f.name}()`, `Standard delegatecall proxy pattern. The implementation behind this address decides the real behaviour; analyze the implementation contract as well.`));
+          const pf = mk(ctx, "UPGRADEABLE_PROXY", adminSettable ? "Upgradeable proxy whose implementation a single privileged key can swap" : "Upgradeable proxy: logic can be replaced by the proxy admin", adminSettable ? "high" : "low", 0.8, n, f,
+            `${sn(ctx, n)} in ${f.name}()`, `Standard delegatecall proxy pattern. The implementation behind this address decides the real behaviour and is not part of this source; ${adminSettable ? "a single key can replace it at any time, so nothing about the token's behaviour is fixed" : "analyze the implementation contract as well"}.`);
+          if (adminSettable) pf.vulnerability = true; // cannot be judged from this file alone -> Uncertain, not Malicious
+          out.push(pf);
         } else if (!isThis) {
           out.push(mk(ctx, "DELEGATECALL", settable ? "delegatecall to an owner-controlled address" : "delegatecall to external code", settable ? "critical" : "high", settable ? 0.85 : 0.6, n, f,
             `${sn(ctx, n)} in ${f.name}()`, `delegatecall executes foreign code in this contract's storage context. ${settable ? "Because the target is settable, the owner can swap in arbitrary logic (including balance rewrites) after launch." : "Any logic in the target can rewrite balances and ownership."}`));
@@ -800,7 +866,13 @@ export function ruleMisc(ctx: Ctx): Finding[] {
     if (!f.node.body) continue;
     walk(f.node.body, (n) => {
       if (n.type === "BinaryOperation" && (n.operator === "==" || n.operator === "!=") && (isTxOrigin(n.left) || isTxOrigin(n.right)) && !(isMsgSender(n.left) || isMsgSender(n.right))) {
-        out.push(mk(ctx, "TX_ORIGIN_AUTH", "tx.origin used for authorization", "low", 0.7, n, f, sn(ctx, n), `tx.origin checks are phishable and often used to whitelist the deployer's EOA in a way that is hard to spot.`));
+        // is this check the gate of a state write? (in this function, or in a public function that calls this helper)
+        const callers = [...c.functions.values()].filter((g) => g === f || g.calls.has(f.name));
+        const guardsWrite = callers.some((g) => g.writes.length > 0 && /^(public|external|default)$/.test(g.visibility));
+        const tf = mk(ctx, "TX_ORIGIN_AUTH", guardsWrite ? "tx.origin is the only authorization on a privileged state change" : "tx.origin used for authorization", guardsWrite ? "high" : "low", guardsWrite ? 0.8 : 0.7, n, f, sn(ctx, n),
+          guardsWrite ? `The owner check compares tx.origin, so any contract the owner is tricked into calling can perform this privileged write on their behalf. Not proof of intent, but the privilege is phishable.` : `tx.origin checks are phishable and often used to whitelist the deployer's EOA in a way that is hard to spot.`);
+        if (guardsWrite) tf.vulnerability = true;
+        out.push(tf);
       }
     });
   }
@@ -844,7 +916,7 @@ export function ruleMisc(ctx: Ctx): Finding[] {
     if (f.isConstructor || f.privileged || !/^(public|external|default)$/.test(f.visibility) || !f.node.body) continue;
     walk(f.node.body, (n) => {
       let hit: string | null = null;
-      const isThisBal = (x: Node) => x?.type === "MemberAccess" && x.memberName === "balance" && x.expression?.type === "FunctionCall" && x.expression.arguments?.[0]?.name === "this";
+      const isThisBal = (x: Node) => x?.type === "MemberAccess" && x.memberName === "balance" && ((x.expression?.type === "FunctionCall" && x.expression.arguments?.[0]?.name === "this") || (x.expression?.type === "Identifier" && x.expression.name === "this"));
       if (n.type === "FunctionCall" && n.expression?.type === "MemberAccess" && (n.expression.memberName === "transfer" || n.expression.memberName === "send") && isMsgSender(n.expression.expression) && n.arguments?.some(isThisBal)) hit = "ETH";
       if (n.type === "FunctionCall" && n.expression?.type === "FunctionCallOptions" && n.expression.expression?.memberName === "call" && isMsgSender(n.expression.expression.expression) && n.expression.arguments?.some?.(isThisBal)) hit = "ETH";
       if (n.type === "FunctionCall" && n.expression?.type === "MemberAccess" && n.expression.memberName === "transfer" && n.arguments?.length === 2 && isMsgSender(n.arguments[0]) && collect(n.arguments[1], (x) => x.type === "MemberAccess" && x.memberName === "balanceOf").length) hit = "ERC20";
@@ -1050,7 +1122,7 @@ export function ruleCustodySweep(ctx: Ctx): Finding[] {
   for (const f of c.functions.values()) {
     if (!f.privileged || f.isConstructor || !f.node.body) continue;
     walk(f.node.body, (n) => {
-      const isThisBal = (x: Node) => x?.type === "MemberAccess" && x.memberName === "balance" && x.expression?.type === "FunctionCall" && x.expression.arguments?.[0]?.name === "this";
+      const isThisBal = (x: Node) => x?.type === "MemberAccess" && x.memberName === "balance" && ((x.expression?.type === "FunctionCall" && x.expression.arguments?.[0]?.name === "this") || (x.expression?.type === "Identifier" && x.expression.name === "this"));
       const sendsWhole = (n.type === "FunctionCall" && n.expression?.type === "MemberAccess" && /^(transfer|send)$/.test(n.expression.memberName) && n.arguments?.some(isThisBal))
         || (n.type === "FunctionCall" && n.expression?.type === "FunctionCallOptions" && n.expression.expression?.memberName === "call" && (n.expression.arguments ?? []).some?.(isThisBal))
         || (n.type === "FunctionCall" && n.expression?.type === "NameValueExpression" && collect(n.expression, isThisBal).length > 0);
