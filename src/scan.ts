@@ -1,46 +1,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import parser from "@solidity-parser/parser";
+import { Resolver } from "./resolve";
 import { buildModels, mainContracts } from "./model";
 import { runRules } from "./rules";
-import { Finding, FileReport, ScanReport, Verdict, ContractReport, Severity } from "./types";
+import { attackPath, checklist } from "./explain";
+import { Finding, FileReport, ScanReport, ContractReport } from "./types";
 
-export const VERSION = "0.1.0";
-const SEV_ORDER: Severity[] = ["critical", "high", "medium", "low", "info"];
-const WEIGHT: Record<Severity, number> = { critical: 45, high: 22, medium: 8, low: 2, info: 0 };
-
-export function verdictFor(findings: Finding[]): { verdict: Verdict; score: number; summary: string } {
-  let score = 0;
-  let crit = 0, high = 0, med = 0;
-  for (const f of findings) {
-    const eff = f.confidence >= 0.75 ? f.severity : downgrade(f.severity);
-    score += WEIGHT[eff] * (0.5 + f.confidence / 2);
-    if (eff === "critical") crit++;
-    else if (eff === "high") high++;
-    else if (eff === "medium") med++;
-  }
-  score = Math.min(100, Math.round(score));
-  const unresolved = findings.some((f) => f.id === "UNRESOLVED_BASE");
-  let verdict: Verdict;
-  if (crit >= 1 || high >= 2) verdict = "Malicious";
-  else if (high >= 1 || med >= 2 || (unresolved && med >= 1)) verdict = "Uncertain";
-  else verdict = "Benign";
-  const top = findings.filter((f) => f.severity !== "info").sort(bySeverity).slice(0, 3).map((f) => f.title);
-  const summary = verdict === "Benign"
-    ? (findings.length ? `No malicious logic found; ${findings.length} informational note(s).` : "No malicious logic or hidden privilege paths found.")
-    : `${verdict}: ${top.join("; ")}`;
-  return { verdict, score, summary };
-}
-
-function downgrade(s: Severity): Severity {
-  const i = SEV_ORDER.indexOf(s);
-  return SEV_ORDER[Math.min(i + 1, SEV_ORDER.length - 1)];
-}
-
-export function bySeverity(a: Finding, b: Finding): number {
-  const d = SEV_ORDER.indexOf(a.severity) - SEV_ORDER.indexOf(b.severity);
-  return d !== 0 ? d : b.confidence - a.confidence;
-}
+export { VERSION, verdictFor, bySeverity } from "./engine";
+import { VERSION, verdictFor, bySeverity } from "./engine";
 
 export function listSolFiles(inputs: string[]): string[] {
   const out: string[] = [];
@@ -49,7 +16,7 @@ export function listSolFiles(inputs: string[]): string[] {
     const st = fs.statSync(p);
     if (st.isDirectory()) {
       const base = path.basename(p);
-      if (/^(node_modules|lib|\.git|out|cache|artifacts|build)$/.test(base) && p !== inputs[0]) return;
+      if (/^(node_modules|\.git|out|cache|artifacts|build)$/.test(base) && p !== inputs[0]) return;
       for (const e of fs.readdirSync(p).sort()) visit(path.join(p, e));
     } else if (st.isFile() && p.endsWith(".sol")) {
       const r = path.resolve(p);
@@ -60,25 +27,27 @@ export function listSolFiles(inputs: string[]): string[] {
   return out;
 }
 
-export function scanFile(file: string): FileReport {
-  const source = fs.readFileSync(file, "utf8");
-  const parseErrors: string[] = [];
-  let ast: any;
-  try {
-    ast = parser.parse(source, { loc: true, range: true, tolerant: true });
-    for (const e of ast.errors ?? []) parseErrors.push(`${e.message} (line ${e.line ?? "?"})`);
-  } catch (e: any) {
-    const errs = e?.errors ?? [e];
-    for (const x of errs) parseErrors.push(x.message ?? String(x));
-    return { file, verdict: "Uncertain", score: 0, parseErrors, contracts: [], findings: [], summary: "Could not parse file." };
+export function scanFile(file: string, resolver?: Resolver): FileReport {
+  const res = resolver ?? new Resolver([file]);
+  const closure = res.closure(file);
+  const entry = closure[0];
+  const parseErrors = [...entry.errors];
+  const unresolvedImports = res.unresolved(file);
+  if (!entry.ast) {
+    return { file, verdict: "Uncertain", score: 0, parseErrors, imports: { resolved: [], unresolved: unresolvedImports }, contracts: [], findings: [], summary: "Could not parse file." };
   }
-  const models = buildModels([{ file, ast }]);
-  const targets = mainContracts(models);
+  const sources = new Map<string, string>();
+  for (const pf of closure) sources.set(pf.file, pf.source);
+  const models = buildModels(closure.filter((pf) => pf.ast).map((pf) => ({ file: pf.file, ast: pf.ast })));
+  const own = models.filter((m) => m.file === entry.file);
+  const targets = mainContracts(own);
   const contracts: ContractReport[] = [];
   const all: Finding[] = [];
   for (const c of targets) {
-    const findings = runRules({ file, source, c }).sort(bySeverity);
+    const findings = runRules({ file: entry.file, source: entry.source, sources, c }).sort(bySeverity);
+    for (const f of findings) { const ap = attackPath(f); if (ap) f.attackPath = ap; }
     contracts.push({
+      checks: checklist(c, findings),
       name: c.name,
       kind: c.kind,
       bases: c.bases,
@@ -90,12 +59,22 @@ export function scanFile(file: string): FileReport {
   }
   all.sort(bySeverity);
   const v = verdictFor(all);
-  return { file, verdict: v.verdict, score: v.score, parseErrors, contracts, findings: all, summary: v.summary };
+  const summary = targets.length ? v.summary : "No deployable contract in this file (interfaces / libraries / abstract only).";
+  return {
+    file, verdict: v.verdict, score: v.score, parseErrors,
+    imports: { resolved: closure.slice(1).map((pf) => path.relative(process.cwd(), pf.file)), unresolved: unresolvedImports },
+    contracts, findings: all, summary,
+  };
 }
 
 export function scan(inputs: string[]): ScanReport {
   const files = listSolFiles(inputs);
-  const reports = files.map(scanFile);
+  const resolver = new Resolver(inputs);
+  const reports = files.map((f) => scanFile(f, resolver));
+  // mark files that only exist to be imported by other scanned files
+  const imported = new Set<string>();
+  for (const r of reports) for (const i of r.imports.resolved) imported.add(path.resolve(i));
+  for (const r of reports) r.role = imported.has(path.resolve(r.file)) ? "library" : "entry";
   return {
     tool: "noexit",
     version: VERSION,

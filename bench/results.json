@@ -1,0 +1,2181 @@
+[
+  {
+    "address": "0x14aa9c36d76901fe1ebcc860038aee9318596103",
+    "label": "Malicious",
+    "category": "ArbitraryTransfer",
+    "verdict": "n/a",
+    "score": 0,
+    "note": "source not verified",
+    "top": ""
+  },
+  {
+    "address": "0xd65960facb8e4a2dfcb2c2212cb2e44a02e2a57e",
+    "label": "Malicious",
+    "category": "ArbitraryTransfer",
+    "verdict": "Malicious",
+    "score": 50,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2b32999dadfaa4c11879fcf4a6480e4d29ed15e8",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2ba93f4cce841e5cd0da320e72e62a860cfd6333",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x4c1cdef065c27dd08037d693c512bb7ed4c38f17",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 49,
+    "note": "",
+    "top": "UNCAPPED_FEE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x5f80c19f63e9ee818017f830aeda36365ba184e4",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x7cd489aea7952d5b66c90eb8894d47cc698967c0",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x7d5902d64e4ed8c60f7c3e2ad1a0aaddd54a6e3f",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 49,
+    "note": "",
+    "top": "UNCAPPED_FEE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9ec8d44af808d7cca2ec23c0dc0d1f49a3386ea4",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x41b6f68950dae15242c3b35bcc9ad6446fcf0849",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x48c1b2f3efa85fbafb2ab951bf4ba860a08cdbb7",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 94,
+    "note": "",
+    "top": "BLACKLIST_GATE,UNCAPPED_FEE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x56af6596f28d9e6f289521d31affdb95c412265e",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x71a982a028c9d4b0566041a78df12b810462e155",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x86e3490bfe0a042658027dc96ca975191aef7e20",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x95fa5c2d804838164bdca5c188e9ffd1d8a624dc",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x123ab195dd38b1b40510d467a6a359b201af056f",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 50,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x130a977156102c0fe5e9075594c03c51bf1be746",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x174bfa6600bf90c885c7c01c7031389ed1461ab9",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x386cabc0b14a507a4e024dea15554342865b20de",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 49,
+    "note": "",
+    "top": "UNCAPPED_FEE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x604e56f49e34beb2ea566e069c6911c60193acd7",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 48,
+    "note": "",
+    "top": "OPEN_OWNER_TAKEOVER,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2604fa406be957e542beb89e6754fcde6815e83f",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Benign",
+    "score": 2,
+    "note": "",
+    "top": "OWNER_MINT,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9570ec7ab05d61877ff7eb180f837c7c079c4844",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x58959e0c71080434f237bd42d07cd84b74cef438",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x81246a3f5fab7aa9f4f625866105f3caffc67686",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xa8ba86e4a8dd2afecd6ee4e6b56d6fc8c8864f09",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xa821f14fb6394e82839f5161f214cacc90372453",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 96,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xae1e1d71f65a380f2fc60ac85a5f710ec3c81b16",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xb052f8a33d8bb068414eade06af6955199f9f010",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc2be193f581f129ace32d2fe949d100dc09c2a05",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xce43921b2fbf3c7f4cf47e28b8261e8e31bc6106",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xdd72a22b2229fcf2a93fe0ec1328244d76d6afc9",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xe8c850af3e5c2c45cc85a3faa7a8fb259d939136",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xeb34ecce760437cd16d549d19d97dd1c3308c23f",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xf4134146af2d511dd5ea8cdb1c4ac88c57d60404",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x50b676fa034b9afe83e05968f2b76aef2c35228d",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x1d52a344915a1c21afbb45defd9bb1820b5a1155",
+    "label": "Malicious",
+    "category": "GenerateToken",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "multi-file (5)",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x4f2c4dffa2f1b0c8695057d3a66b8e1a462f5834",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 42,
+    "note": "",
+    "top": "BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6ea6531b603f270d23d9edd2d8279135dc5d6773",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 42,
+    "note": "",
+    "top": "BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Uncertain",
+    "score": 27,
+    "note": "",
+    "top": "TRADING_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x19c366386ed73c276ebf883d9c29a4d9208f54e1",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x46b9ad944d1059450da1163511069c718f699d31",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x56c26d3e5051bc0bae8d740304c8dcc16d5e1166",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 82,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Uncertain",
+    "score": 27,
+    "note": "",
+    "top": "TRADING_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x99bc08db67f52010f2d6017b7ad968808113db10",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Uncertain",
+    "score": 30,
+    "note": "",
+    "top": "SELFDESTRUCT,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x574f84108a98c575794f75483d801d1d5dc861a5",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Uncertain",
+    "score": 30,
+    "note": "",
+    "top": "SELFDESTRUCT,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x662abcad0b7f345ab7ffb1b1fbb9df7894f18e66",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 48,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x744d70fdbe2ba4cf95131626614a1763df805b9e",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x765f0c16d1ddc279295c1a7c24b0883f62d33f75",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x0794ce7d4459105926da230f318c1e34bc790517",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "EXTERNAL_TRANSFER_HOOK,EXTERNAL_TRANSFER_HOOK",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x814f67fa286f7572b041d041b1d99b432c9155ee",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x1829aa045e21e0d59580024a951db48096e01782",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Benign",
+    "score": 2,
+    "note": "",
+    "top": "PRIVILEGED_WITHDRAW",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2396fbc0e2e3ae4b7206ebdb5706e2a5920349cb",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Uncertain",
+    "score": 61,
+    "note": "",
+    "top": "SELFDESTRUCT,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xae1e1d71f65a380f2fc60ac85a5f710ec3c81b16",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xafaefa2a7c7aab9f8b047268500035514487ef0a",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 42,
+    "note": "",
+    "top": "BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xb9e7f8568e08d5659f5d29c4997173d84cdf2607",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xbae94d28610c8cfd2168f7b97bc7cb0589803c6b",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 42,
+    "note": "",
+    "top": "BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc2be193f581f129ace32d2fe949d100dc09c2a05",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc7c03b8a3fc5719066e185ea616e87b88eba44a3",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Uncertain",
+    "score": 30,
+    "note": "",
+    "top": "SELFDESTRUCT,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xcbeaec699431857fdb4d37addbbdc20e132d4903",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xd0d932c9f78583d297e487a7965223d0fe1008c8",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xd4c435f5b09f855c3317c8524cb1f586e42795fa",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xe7d3e4413e29ae35b0893140f4500965c74365e5",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Uncertain",
+    "score": 24,
+    "note": "",
+    "top": "SELFDESTRUCT,PRIVILEGED_WITHDRAW",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xea38eaa3c86c8f9b751533ba2e562deb9acded40",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Uncertain",
+    "score": 21,
+    "note": "",
+    "top": "BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x0cb8d0b37c7487b11d57f1f33defa2b1d3cfccfe",
+    "label": "Malicious",
+    "category": "DestoryToken",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "multi-file (4)",
+    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x0b6e701cd51a9e1b5829a4c4fe2130d60c0c4f6c",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Benign",
+    "score": 2,
+    "note": "",
+    "top": "PRIVILEGED_WITHDRAW,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x1a45a07a01e29174ea7d62ec50c84a44b571bac8",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BLACKLIST_GATE,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x1d52a344915a1c21afbb45defd9bb1820b5a1155",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "multi-file (5)",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x1dd34b35d96f5159567ef4cad2c69c0f87c3195c",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x1f10822c753a1f587923d9916e64738ee7c27419",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2b32999dadfaa4c11879fcf4a6480e4d29ed15e8",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2ba93f4cce841e5cd0da320e72e62a860cfd6333",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2bba3cf6de6058cc1b4457ce00deb359e2703d7f",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2bda5b625d3b50848e8563480ed50ec782dd42ee",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2dcfce5df534b5bd27d3f1cf78e17d67addd0bce",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 64,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x3de1453931b1956611786ca520b30710c5b6ae3e",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BLACKLIST_GATE,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x4f741424b57d12f2e7b51d7dfe17584d90cc3f88",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 80,
+    "note": "",
+    "top": "BLACKLIST_GATE,SELFDESTRUCT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x5d3d1598e70a2fce9ebe13ac613185da05febbe8",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x5d64d850c8368008afb39224e92ad0dceff3cf38",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x5d93d92324162a75e5cb3001b0f753c50144e6ab",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x5e3002dff591c5e75bb9dedae268049742e6b13a",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x5f80c19f63e9ee818017f830aeda36365ba184e4",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6e8b6f2d02eacbe33b4c45154cbfa53df1b542ea",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6ff869d8727ef71369dd33d7e6fd63da31ae203f",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x7cd489aea7952d5b66c90eb8894d47cc698967c0",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x7fa4f8d1b089d79b65bc35805726a380e0ef4c1b",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x08a2246dcb48db6a5a9e1f6bc082752fceddd106",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x8de1cb4124904ede26d7295ef1f83bab4c2bcfc0",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x8ec7740a73b1bf8d72d471dfe63a34f81f50a118",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "multi-file (6)",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9e7ce36dbd1a9a6c6e80d08e38077745855edd3a",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 46,
+    "note": "",
+    "top": "BLACKLIST_GATE,PRIVILEGED_WITHDRAW",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9e96236e3203b0eebda0276b744a3932cc433f69",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BLACKLIST_GATE,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9ec8d44af808d7cca2ec23c0dc0d1f49a3386ea4",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9eec65e5b998db6845321baa915ec3338b1a469b",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x14ddda446688b73161aa1382f4e4343353af6fc8",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BLACKLIST_GATE,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x24df76b88a2ea9ae3c3af5402ba4493226a82143",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x41b6f68950dae15242c3b35bcc9ad6446fcf0849",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x46b9ad944d1059450da1163511069c718f699d31",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x56c26d3e5051bc0bae8d740304c8dcc16d5e1166",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 82,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x67fe8dbf5ed0aa9d7a127e5e061d715a1eff3712",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x71a982a028c9d4b0566041a78df12b810462e155",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x86e3490bfe0a042658027dc96ca975191aef7e20",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x89f70fa9f439dbd0a1bc22a09befc56ada04d9b4",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x93c564d4cc593867daae181eb3b494a2362b1ec5",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x95fa5c2d804838164bdca5c188e9ffd1d8a624dc",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x98c0a763de628863f0afb9d75eeee9ad06b18c8e",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x98f777fb9139576902bf7f35956ca015ddc1569f",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x130a977156102c0fe5e9075594c03c51bf1be746",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x174bfa6600bf90c885c7c01c7031389ed1461ab9",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x240bae5a27233fd3ac5440b5a598467725f7d1cd",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x445f51299ef3307dbd75036dd896565f5b4bf7a5",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 58,
+    "note": "",
+    "top": "BLACKLIST_GATE,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x496a8a1c9b3aa406a51046e64149b230ccd903a5",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x521a0d4917b1dec2c21b4807a3dd41c5325aa637",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x547c4c2ee931cf94c84b7ed0800512d0271a7290",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x714c1ef3854591d4118bd6887d4740bc4d5f5412",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x1354c8c1a66c2573ce9cc3e92e98d17869501a46",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x2467aa6b5a2351416fd4c3def8462d841feeecec",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 60,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x4689a4e169eb39cc9078c0940e21ff1aa8a39b9c",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 46,
+    "note": "",
+    "top": "BLACKLIST_GATE,PRIVILEGED_WITHDRAW",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9570ec7ab05d61877ff7eb180f837c7c079c4844",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x17280da053596e097604839c61a2ef5efb7d493f",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x58959e0c71080434f237bd42d07cd84b74cef438",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x81246a3f5fab7aa9f4f625866105f3caffc67686",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x378903a03fb2c3ac76bb52773e3ce11340377a32",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6682195e2a0048ce38b727a3711802d58244606e",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x59335080522fa941bcbdb6e15a6f2ee5a455dc5a",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xa8ba86e4a8dd2afecd6ee4e6b56d6fc8c8864f09",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xa8f5e53cf3a6122b390712d5f72fe5b10e03aab2",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xa88fc5e2b9aa4e3bb40d67fa553517a1569c8e72",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xa370d750995d198834df49191893aa4aa44742af",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xab28787f0f0de52bc294e0f602cad2fb7ac2e248",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xae1e1d71f65a380f2fc60ac85a5f710ec3c81b16",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xb0fe24dc6222e9d9d0e43ab67f40c578af810d21",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xb16d3ed603d62b125c6bd45519eda40829549489",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xba1ed22c69ad00739ee2b4abd70e270be9e87ee2",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xbae94d28610c8cfd2168f7b97bc7cb0589803c6b",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 42,
+    "note": "",
+    "top": "BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc2be193f581f129ace32d2fe949d100dc09c2a05",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc92029b1fcafb6d6285d49ee44bcc6cad2a91fd5",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BLACKLIST_GATE,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xcb33ba014340aac7644184772c4c5f431b3e1ad9",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BLACKLIST_GATE,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xce43921b2fbf3c7f4cf47e28b8261e8e31bc6106",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xd29decbfd29766d8aba8215587f915162c5bd8d8",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xd50649aab1d39d68bc965e0f6d1cfe0010e4908b",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 86,
+    "note": "",
+    "top": "BLACKLIST_GATE,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xd7394087e1dbbe477fe4f1cf373b9ac9459565ff",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xdaf24bc5f10f77fa6dc07e367f7c3303ba781fd5",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BLACKLIST_GATE,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xdd8a513d11bd563e009f8e561c488ba7969470e1",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xdd72a22b2229fcf2a93fe0ec1328244d76d6afc9",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xe1aee98495365fc179699c1bb3e761fa716bee62",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xe4ffee3b33360e21ea2aec37a39901cb720eb84c",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xe8c850af3e5c2c45cc85a3faa7a8fb259d939136",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xeb34ecce760437cd16d549d19d97dd1c3308c23f",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xf02b85793abf048335f7044f32c7877f6e4a943d",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xf3b450002c7bc300ea03c9463d8e8ba7f821b7c6",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xf336496011891a6f905cde1242285e9953c94d0b",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xfa456cf55250a839088b27ee32a424d7dacb54ff",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Uncertain",
+    "score": 14,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xfb5fb992b64c86fbcb33ba151abd8ecbcc611bde",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 46,
+    "note": "",
+    "top": "BLACKLIST_GATE,PRIVILEGED_WITHDRAW",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xfc87d4f82fc5fe80a2d1692ffee872b2517c34c7",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 44,
+    "note": "",
+    "top": "BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xfd1ccd0f8fabab9b5b81173de82de4a1566ac53f",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BLACKLIST_GATE,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6f7a4bac3315b5082f793161a22e26666d22717f",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x50b676fa034b9afe83e05968f2b76aef2c35228d",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x85ca6710d0f1d511d130f6935edda88acbd921bd",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 45,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,PRIVILEGED_WITHDRAW",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xca2796f9f61dc7b238aab043971e49c6164df375",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 85,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x00ef6a5a141eabea8588c8100a96f9773b5ccaf6",
+    "label": "Malicious",
+    "category": "FreezeAccount",
+    "verdict": "Malicious",
+    "score": 84,
+    "note": "",
+    "top": "BLACKLIST_GATE,BLACKLIST_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6d3475a51ef25e210e7f2851ce4af528738a975a",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x7e0d051ec68668d603c4e33255d1aed342a691b7",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 20,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x8bcb64bfda77905398b67af0af084c744e777a20",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9b11efcaaa1890f6ee52c6bb7cf8153ac5d74139",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 41,
+    "note": "",
+    "top": "SELFDESTRUCT,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 27,
+    "note": "",
+    "top": "TRADING_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x14c926f2290044b647e1bf2072e67b495eff1905",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 22,
+    "note": "",
+    "top": "TRADING_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x17d30c85376bc2c39edc1da179162d308559a3c4",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 20,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x21f15966e07a10554c364b988e91dab01d32794a",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x031e0c6a7c91df1bc171d33cccc6988fd2ddeb6f",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 20,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x46b9ad944d1059450da1163511069c718f699d31",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x46bf6e3e2d51bc587de0e2121748fd15dec991d1",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 64,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x55f93985431fc9304077687a35a1ba103dc1e081",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 27,
+    "note": "",
+    "top": "TRADING_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x381beac50b9a5ea06a320a72592f7460c49a2b48",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 20,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x9954ff0295443c01f562dccb1f893be464e01986",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 20,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x27054b13b1b798b345b591a4d22e6562d47ea75a",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x589891a198195061cb8ad1a75357a3b7dbadd7bc",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 71,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xa66daa57432024023db65477ba87d4e7f5f95213",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 20,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xae1e1d71f65a380f2fc60ac85a5f710ec3c81b16",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 51,
+    "note": "",
+    "top": "BLACKLIST_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xbc2faad1ec407571249b0e874a9abd840111389b",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 20,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xbf799a2f71d020a4a8c10e7406e2bf970b3d734b",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "HIDDEN_MINT,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc5b106f17246b2f5c0c658dbd6e8d168695806ab",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 20,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc79d4c81f87c152ba604017a7b4747232ae30280",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,UNCAPPED_FEE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xcbd49182346421d3b410b04aeb1789346da6ce43",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xcf9fbffec9e0e5bbc62e79bf1965f5db76955661",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xda2e0aa8f697db190c32034894cf9731f6619960",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Uncertain",
+    "score": 20,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xdf859c9878ef5e742d7bbe3c22a496c088c89fa9",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xff603f43946a3a28df5e6a73172555d8c8b02386",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 64,
+    "note": "",
+    "top": "BLACKLIST_GATE,TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x01f2acf2914860331c1cb1a9acecda7475e06af8",
+    "label": "Malicious",
+    "category": "DisableTransfer",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "BLACKLIST_GATE,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "label": "Benign",
+    "category": "WETH",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+    "label": "Benign",
+    "category": "UNI",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+    "label": "Benign",
+    "category": "LINK",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+    "label": "Benign",
+    "category": "DAI",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+    "label": "Benign",
+    "category": "AAVE",
+    "verdict": "Benign",
+    "score": 2,
+    "note": "multi-file (19) proxy->0x5d4aa78b08bc7c530e21bf7447988b1be7991322",
+    "top": "UPGRADEABLE_PROXY",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc00e94cb662c3520282e6f5717214004a7f26888",
+    "label": "Benign",
+    "category": "COMP",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
+    "label": "Benign",
+    "category": "SHIB",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+    "label": "Benign",
+    "category": "PEPE",
+    "verdict": "Malicious",
+    "score": 47,
+    "note": "",
+    "top": "BLACKLIST_GATE,OWNER_LIMIT_TO_ZERO",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xd533a949740bb3306d119cc777fa900ba034cd52",
+    "label": "Benign",
+    "category": "CRV",
+    "verdict": "Uncertain",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 1
+  },
+  {
+    "address": "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
+    "label": "Benign",
+    "category": "LDO",
+    "verdict": "Malicious",
+    "score": 100,
+    "note": "",
+    "top": "EXTERNAL_TRANSFER_HOOK,APPROVAL_BYPASS",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72",
+    "label": "Benign",
+    "category": "ENS",
+    "verdict": "Benign",
+    "score": 2,
+    "note": "multi-file (16)",
+    "top": "OWNER_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x111111111117dc0aa78b770fa6a738034120c302",
+    "label": "Benign",
+    "category": "1INCH",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6b3595068778dd592e39a122f4f5a5cf09c90fe2",
+    "label": "Benign",
+    "category": "SUSHI",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e",
+    "label": "Benign",
+    "category": "YFI",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x0d8775f648430679a709e98d2b0cb6250d2887ef",
+    "label": "Benign",
+    "category": "BAT",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+    "label": "Benign",
+    "category": "ZRX",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
+    "label": "Benign",
+    "category": "GRT",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xba100000625a3754423978a60c9317c58a424e3d",
+    "label": "Benign",
+    "category": "BAL",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x4d224452801aced8b2f0aebe155379bb5d594381",
+    "label": "Benign",
+    "category": "APE",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "multi-file (5)",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x6810e776880c02933d47db1b9fc05908e5386b96",
+    "label": "Benign",
+    "category": "GNO",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xbbbbca6a901c926f240b89eacb641d8aec7aeafd",
+    "label": "Benign",
+    "category": "LRC",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x0f5d2fb29fb7d3cfee444a200298f468908cc942",
+    "label": "Benign",
+    "category": "MANA",
+    "verdict": "Uncertain",
+    "score": 14,
+    "note": "",
+    "top": "TRADING_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x3845badade8e6dff049820680d1f14bd3903a5d0",
+    "label": "Benign",
+    "category": "SAND",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "multi-file (8)",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xbb0e17ef65f82ab018d8edd776e8dd940327b28b",
+    "label": "Benign",
+    "category": "AXS",
+    "verdict": "Benign",
+    "score": 0,
+    "note": "",
+    "top": "",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x3506424f91fd33084466f402d5d97f05f8e3b4af",
+    "label": "Benign",
+    "category": "CHZ",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "TRADING_GATE",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xd26114cd6ee289accf82350c8d8487fedb8a0c07",
+    "label": "Benign",
+    "category": "OMG",
+    "verdict": "Uncertain",
+    "score": 22,
+    "note": "",
+    "top": "TRADING_GATE,HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b",
+    "label": "Benign",
+    "category": "CRO",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "HIDDEN_MINT",
+    "parseErrors": 0
+  },
+  {
+    "address": "0x4a220e6096b25eadb88358cb44068a3248254675",
+    "label": "Benign",
+    "category": "QNT",
+    "verdict": "Benign",
+    "score": 7,
+    "note": "",
+    "top": "BALANCE_MANIPULATION",
+    "parseErrors": 0
+  },
+  {
+    "address": "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c",
+    "label": "Benign",
+    "category": "ENJ",
+    "verdict": "Uncertain",
+    "score": 26,
+    "note": "",
+    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
+    "parseErrors": 0
+  }
+]

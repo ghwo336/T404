@@ -20,6 +20,13 @@ export interface Finding {
   evidence: string; // what in the code triggered it
   reasoning: string; // why this is dangerous (logic / privilege explanation)
   related?: Location[];
+  attackPath?: string[]; // step-by-step replay of how the finding is exploited
+}
+
+export interface Check {
+  id: string;
+  status: "pass" | "fail";
+  note: string;
 }
 
 export interface ContractReport {
@@ -28,6 +35,7 @@ export interface ContractReport {
   bases: string[];
   privilegedFunctions: string[];
   transferPath: string[];
+  checks: Check[]; // what was verified, incl. the checks that passed
   findings: Finding[];
 }
 
@@ -36,6 +44,8 @@ export interface FileReport {
   verdict: Verdict;
   score: number;
   parseErrors: string[];
+  role?: "entry" | "library"; // library = imported by another scanned file
+  imports: { resolved: string[]; unresolved: string[] };
   contracts: ContractReport[];
   findings: Finding[]; // flattened, sorted by severity
   summary: string;

@@ -45,12 +45,13 @@ contract ERC20 is Context {
     function _approve(address o, address s, uint256 amount) internal { _allowances[o][s] = amount; emit Approval(o, s, amount); }
 }
 
-contract PausableToken is ERC20, Ownable {
-    bool public halted;
+contract StdPausable is ERC20, Ownable {
+    bool public paused;
     constructor() ERC20("Pausable", "PSD") { _mint(msg.sender, 1e27); }
-    function halt(bool h) external onlyOwner { halted = h; }
+    function pause() external onlyOwner { paused = true; }
+    function unpause() external onlyOwner { paused = false; }
     function _transfer(address from, address to, uint256 amount) internal override {
-        require(!halted, "halted");
+        require(!paused, "paused");
         super._transfer(from, to, amount);
     }
 }

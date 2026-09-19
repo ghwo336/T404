@@ -25,8 +25,9 @@ function pretty(r: ScanReport, color: boolean, verbose: boolean): string {
 
 function prettyFile(f: FileReport, c: (s: string, code: string) => string, verbose: boolean): string[] {
   const out: string[] = [];
-  out.push(`${c(f.verdict.toUpperCase().padEnd(9), VERDICT_COLOR[f.verdict])} ${c(String(f.score).padStart(3), C.bold)}/100  ${f.file}`);
+  out.push(`${c(f.verdict.toUpperCase().padEnd(9), VERDICT_COLOR[f.verdict])} ${c(String(f.score).padStart(3), C.bold)}/100  ${f.file}${f.role === "library" ? c("  (imported by another file)", C.dim) : ""}`);
   if (f.parseErrors.length) for (const e of f.parseErrors.slice(0, 3)) out.push(`         ${c("parse: " + e, C.magenta)}`);
+  if (f.imports.resolved.length || f.imports.unresolved.length) out.push(`           ${c(`imports: ${f.imports.resolved.length} resolved${f.imports.unresolved.length ? `, unresolved: ${f.imports.unresolved.join(", ")}` : ""}`, C.dim)}`);
   const shown = f.findings.filter((x) => verbose || x.severity !== "info");
   for (const x of shown) {
     const where = `${x.location.contract ?? ""}${x.location.function ? "." + x.location.function + "()" : ""} L${x.location.line}`;
@@ -37,8 +38,18 @@ function prettyFile(f: FileReport, c: (s: string, code: string) => string, verbo
     } else if (x.location.snippet) {
       out.push(`           ${c(x.location.snippet, C.dim)}`);
     }
+    if (x.attackPath && (verbose || x.severity === "critical" || x.severity === "high")) {
+      x.attackPath.forEach((step, i) => out.push(`           ${c(`${i + 1}. `, C.magenta)}${step}`));
+    }
   }
   if (!shown.length) out.push(`           ${c(f.summary, C.dim)}`);
+  if (verbose || f.verdict === "Benign") {
+    for (const ct of f.contracts) {
+      if (!ct.checks.length) continue;
+      out.push(`           ${c(`checks for ${ct.name}:`, C.dim)}`);
+      for (const k of ct.checks) out.push(`           ${k.status === "pass" ? c("✓", C.green) : c("✗", C.red)} ${k.id.padEnd(30)} ${c(k.note, C.dim)}`);
+    }
+  }
   out.push("");
   return out;
 }
@@ -59,6 +70,8 @@ function toSarif(r: ScanReport) {
     }],
   };
 }
+
+process.stdout.on("error", (e: NodeJS.ErrnoException) => { if (e.code === "EPIPE") process.exit(0); throw e; });
 
 const program = new Command();
 program.name("noexit").description("Offline static analysis of Solidity sources for honeypot / rug-pull / hidden-privilege patterns.").version(VERSION);

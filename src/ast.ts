@@ -66,10 +66,19 @@ export function endLine(node: Node): number {
   return node?.loc?.end?.line ?? line(node);
 }
 
+/** names of zero-arg functions that just `return msg.sender` (Context._msgSender and obfuscated clones). Reset per analysis by buildModels. */
+export const msgSenderAliases = new Set<string>(["_msgSender"]);
+/** names of zero-arg functions that return an owner-like state variable (owner(), getOwner(), obfuscated clones). */
+export const ownerGetters = new Set<string>(["owner", "getOwner", "_owner", "admin", "getAdmin"]);
+
 export function isMsgSender(n: Node): boolean {
   return (
     n?.type === "MemberAccess" && n.memberName === "sender" && n.expression?.type === "Identifier" && n.expression.name === "msg"
-  ) || (n?.type === "FunctionCall" && n.expression?.type === "Identifier" && n.expression.name === "_msgSender");
+  ) || (n?.type === "FunctionCall" && n.expression?.type === "Identifier" && msgSenderAliases.has(n.expression.name) && (n.arguments?.length ?? 0) === 0);
+}
+
+export function isOwnerGetterCall(n: Node): boolean {
+  return n?.type === "FunctionCall" && n.expression?.type === "Identifier" && ownerGetters.has(n.expression.name) && (n.arguments?.length ?? 0) === 0;
 }
 
 export function isTxOrigin(n: Node): boolean {

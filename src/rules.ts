@@ -1,11 +1,17 @@
-import { Node, walk, collect, baseName, identifiers, isCallTo, calleeName, numberValue, isZeroAddress, line, endLine, snippet, isMsgSender, isTxOrigin, indexChain } from "./ast";
+import { Node, walk, collect, baseName, identifiers, isCallTo, calleeName, numberValue, isZeroAddress, line, endLine, snippet, isMsgSender, isTxOrigin, indexChain, isOwnerGetterCall, ownerGetters } from "./ast";
 import { Contract, Func, Assign, PAIR_NAME } from "./model";
 import { Finding, Severity, Location } from "./types";
 
 export interface Ctx {
-  file: string;
-  source: string;
+  file: string; // entry file being judged
+  source: string; // entry file source
+  sources: Map<string, string>; // every resolved file -> source
   c: Contract;
+}
+
+/** snippet from whichever file the node was parsed from (nodes are tagged with __file at parse time) */
+function sn(ctx: Ctx, node: Node): string {
+  return snippet(ctx.sources.get(node?.__file) ?? ctx.source, node);
 }
 
 const TO_NAMES = /^(to|_to|recipient|_recipient|dst|receiver|target|_receiver)$/i;
@@ -15,17 +21,17 @@ const EXEMPT_NAME = /(exclud|exempt|whitelist|isFeeExempt|isTxLimitExempt|noFee|
 const BLACKLIST_NAME = /(blacklist|blocklist|blocked|banned|bots?$|isBot|_isBot|sniper|frozen|freeze|restricted|denylist|cannotSell|canSell|isBlack|locked|jail)/i;
 const FEE_NAME = /(fee|tax|rate|percent|pct|bps|burn|liquidity|marketing|dev|reflect|charity|team|slippage|cut|commission)/i;
 const WITHDRAW_NAME = /(withdraw|rescue|recover|claim|sweep|clear|emergency|manual|sendETH|sendEth|drain|collect|stuck|forward|payout|distribute)/i;
-const OWNERSHIP_FN = /^(transferOwnership|_transferOwnership|renounceOwnership|acceptOwnership|_setOwner|setOwner|changeOwner|updateOwner|transferAdmin|setAdmin|changeAdmin|_setAdmin|initialize|init|__Ownable_init|__Ownable_init_unchained|_checkOwner|pushManagement|pullManagement|renounceManagement)$/i;
+const OWNERSHIP_FN = /^_?(transferOwnership|_transferOwnership|renounceOwnership|acceptOwnership|_setOwner|setOwner|changeOwner|updateOwner|transferAdmin|setAdmin|changeAdmin|_setAdmin|initialize|init|__Ownable_init|__Ownable_init_unchained|_checkOwner|pushManagement|pullManagement|renounceManagement|initializeOwner|setGovernor|transferGovernance|acceptGovernance|_initialize|initializer|setup|configure)$/i;
 
 function loc(ctx: Ctx, node: Node, fn?: Func): Location {
   return {
-    file: ctx.file,
+    file: node?.__file ?? fn?.file ?? ctx.c.file,
     line: line(node),
     column: node?.loc?.start?.column ?? 0,
     endLine: endLine(node),
-    contract: ctx.c.name,
+    contract: fn?.contract ?? ctx.c.name,
     function: fn?.name,
-    snippet: snippet(ctx.source, node),
+    snippet: sn(ctx, node),
   };
 }
 
@@ -35,7 +41,8 @@ function mk(ctx: Ctx, id: string, title: string, severity: Severity, confidence:
 
 function hasRevert(body: Node): boolean {
   if (!body) return false;
-  return collect(body, (x) => x.type === "RevertStatement" || x.type === "ThrowStatement" || isCallTo(x, ["revert"]) || (isCallTo(x, ["require", "assert"]) && x.arguments?.[0]?.type === "BooleanLiteral" && x.arguments[0].value === false)).length > 0;
+  return collect(body, (x) => x.type === "RevertStatement" || x.type === "ThrowStatement" || isCallTo(x, ["revert"]) || (isCallTo(x, ["require", "assert"]) && x.arguments?.[0]?.type === "BooleanLiteral" && x.arguments[0].value === false)
+    || (x.type === "ReturnStatement" && x.expression?.type === "BooleanLiteral" && x.expression.value === false)).length > 0; // `return false` = silent block (pre-0.4.22 style)
 }
 
 interface Gate { fn: Func; node: Node; cond: Node; kind: "require" | "if-revert" | "if"; body?: Node; enclosing: Node[] }
@@ -49,7 +56,7 @@ function transferGates(c: Contract): Gate[] {
     const visit = (n: Node, enclosing: Node[]) => {
       if (!n || typeof n !== "object") return;
       if (Array.isArray(n)) { for (const x of n) visit(x, enclosing); return; }
-      if (isCallTo(n, ["require"]) && n.arguments?.[0]) out.push({ fn: f, node: n, cond: n.arguments[0], kind: "require", enclosing });
+      if (isCallTo(n, ["require", "assert"]) && n.arguments?.[0] && n.arguments[0].type !== "BooleanLiteral") out.push({ fn: f, node: n, cond: n.arguments[0], kind: "require", enclosing });
       if (n.type === "IfStatement") {
         const rv = hasRevert(n.trueBody) && !n.falseBody ? "if-revert" : hasRevert(n.falseBody) && !hasRevert(n.trueBody) ? "if" : hasRevert(n.trueBody) ? "if-revert" : "if";
         out.push({ fn: f, node: n, cond: n.condition, kind: rv, body: n.trueBody, enclosing });
@@ -61,6 +68,11 @@ function transferGates(c: Contract): Gate[] {
       for (const k of Object.keys(n)) { if (k === "loc" || k === "range") continue; const v = n[k]; if (v && typeof v === "object") visit(v, enclosing); }
     };
     visit(f.node.body, []);
+    // guards that live in the function's modifiers (canTransfer(msg.sender), whenNotPaused, inNormalState ...)
+    for (const mname of f.modifiers) {
+      const m = c.modifiers.get(mname);
+      if (m?.node?.body && !m.privileged) visit(m.node.body, []);
+    }
   }
   return out;
 }
@@ -90,10 +102,10 @@ function refsIdent(expr: Node, name: string | null): boolean {
 function refsExemption(c: Contract, expr: Node): boolean {
   const ids = identifiers(expr);
   if (ids.some((i) => c.ownerVars.has(i))) return true;
-  if (ids.some((i) => EXEMPT_NAME.test(i) && c.stateVars.has(i))) return true;
+  if (ids.some((i) => (EXEMPT_NAME.test(i) && c.stateVars.has(i)) || c.exemptMaps.has(i))) return true;
   let found = false;
   walk(expr, (n) => {
-    if (n.type === "FunctionCall" && /^(owner|_owner|getOwner|isExcluded|isExempt|_isExcludedFromFee|isFeeExempt)/i.test(calleeName(n) ?? "")) found = true;
+    if (isOwnerGetterCall(n) || (n.type === "FunctionCall" && /^(isExcluded|isExempt|_isExcludedFromFee|isFeeExempt)/i.test(calleeName(n) ?? ""))) found = true;
     if (n.type === "IndexAccess" && EXEMPT_NAME.test(baseName(n.base) ?? "")) found = true;
     if (n.type === "MemberAccess" && n.memberName === "sender" && false) found = true;
   });
@@ -200,6 +212,70 @@ function feeDenominator(c: Contract): number | null {
   return denom;
 }
 
+/** State vars that feed the transfer arithmetic, directly or via a local (`uint f = sellFee; amount * f / 100`). */
+function feeStateVars(c: Contract): Set<string> {
+  const direct = new Set<string>();
+  const localFrom = new Map<string, Set<string>>(); // local -> state vars assigned into it
+  const arithLocals = new Set<string>();
+  for (const fname of c.transferPath) {
+    const f = c.functions.get(fname);
+    if (!f?.node.body) continue;
+    walk(f.node.body, (n) => {
+      const arith = (n.type === "BinaryOperation" && (n.operator === "*" || n.operator === "/")) || isCallTo(n, ["mul", "div"]);
+      if (arith) for (const i of identifiers(n)) { if (c.stateVars.has(i) && !c.stateVars.get(i)!.isMapping) direct.add(i); else arithLocals.add(i); }
+      if ((n.type === "BinaryOperation" && n.operator === "=") || n.type === "VariableDeclarationStatement") {
+        const target = n.type === "VariableDeclarationStatement" ? n.variables?.[0]?.name : baseName(n.left);
+        const value = n.type === "VariableDeclarationStatement" ? n.initialValue : n.right;
+        if (target && value && !c.stateVars.has(target)) {
+          const set = localFrom.get(target) ?? new Set<string>();
+          for (const i of identifiers(value)) if (c.stateVars.has(i) && !c.stateVars.get(i)!.isMapping && /^uint/.test(c.stateVars.get(i)!.typeStr)) set.add(i);
+          localFrom.set(target, set);
+        }
+      }
+    });
+  }
+  for (const [local, svs] of localFrom) if (arithLocals.has(local)) for (const v of svs) direct.add(v);
+  // interprocedural, 2 rounds: state var (or local derived from one) passed as an argument to an internal function whose
+  // matching parameter is used in arithmetic; and state var assigned from another state var inside the path.
+  const paramArith = (f: Func, idx: number) => f.params[idx] && arithLocals.has(f.params[idx]);
+  for (let round = 0; round < 2; round++) {
+    for (const fname of c.transferPath) {
+      const f = c.functions.get(fname);
+      if (!f?.node.body) continue;
+      walk(f.node.body, (n) => {
+        if (n.type === "FunctionCall" && n.expression?.type === "Identifier") {
+          const callee = c.functions.get(n.expression.name);
+          if (!callee) return;
+          (n.arguments ?? []).forEach((a: Node, i: number) => {
+            if (!paramArith(callee, i)) return;
+            for (const id of identifiers(a)) {
+              if (c.stateVars.has(id) && !c.stateVars.get(id)!.isMapping) direct.add(id);
+              for (const v of localFrom.get(id) ?? []) direct.add(v);
+            }
+          });
+        }
+        if (n.type === "BinaryOperation" && n.operator === "=") {
+          const b = baseName(n.left);
+          if (b && c.stateVars.has(b) && direct.has(b)) for (const i of identifiers(n.right)) if (c.stateVars.has(i) && !c.stateVars.get(i)!.isMapping) direct.add(i);
+        }
+      });
+    }
+  }
+  return direct;
+}
+
+/** State vars that are assigned inside a sell-conditioned branch of the transfer path (name-independent "sell fee" detection). */
+function sellBranchAssigned(c: Contract): Set<string> {
+  const out = new Set<string>();
+  for (const g of transferGates(c)) {
+    if (g.kind !== "if" || !g.body || !inSellBranch(c, g)) continue;
+    walk(g.body, (n) => {
+      if (n.type === "BinaryOperation" && n.operator === "=") for (const i of identifiers(n.right)) if (c.stateVars.has(i) && /^uint/.test(c.stateVars.get(i)!.typeStr)) out.add(i);
+    });
+  }
+  return out;
+}
+
 function inSellBranch(c: Contract, gate: Gate): boolean {
   if (sellCond(c, gate.fn, gate.cond)) return true;
   return gate.enclosing.some((e) => sellCond(c, gate.fn, e));
@@ -239,7 +315,7 @@ export function ruleSellRestriction(ctx: Ctx): Finding[] {
     const exempt = refsExemption(c, g.cond);
     if (g.kind === "if-revert") {
       out.push(mk(ctx, "SELL_RESTRICTION", "Sell path reverts (buy allowed, sell blocked)", "critical", exempt ? 0.95 : 0.85, g.node, g.fn,
-        `Transfer to the liquidity pair is rejected: ${snippet(ctx.source, g.cond)}`,
+        `Transfer to the liquidity pair is rejected: ${sn(ctx, g.cond)}`,
         `Inside the token transfer logic, a transfer whose destination is the DEX pair (i.e. a sell) hits a revert${exempt ? " unless the sender is owner/exempt" : ""}. Buying (pair -> user) passes through. This is the canonical honeypot: users can acquire the token but cannot exit.`));
       continue;
     }
@@ -247,7 +323,7 @@ export function ruleSellRestriction(ctx: Ctx): Finding[] {
       // require(to != pair || exempt) / require(!(to == pair) ...)
       const exemptOrToggle = exempt || identifiers(g.cond).some((i) => c.stateVars.get(i)?.typeStr === "bool");
       out.push(mk(ctx, "SELL_RESTRICTION", "Sell path guarded by require that ordinary holders cannot satisfy", exempt ? "critical" : "high", exempt ? 0.9 : 0.6, g.node, g.fn,
-        `require in transfer path references the pair and the recipient: ${snippet(ctx.source, g.cond)}`,
+        `require in transfer path references the pair and the recipient: ${sn(ctx, g.cond)}`,
         `A require() in the transfer path distinguishes sells (recipient == pair) from other transfers${exempt ? " and only owner/exempt addresses satisfy it" : exemptOrToggle ? " and depends on an owner-controlled flag" : ""}. Ordinary holders may be unable to sell.`));
       continue;
     }
@@ -264,13 +340,14 @@ export function ruleSellRestriction(ctx: Ctx): Finding[] {
     const hasReturn = collect(body, (n) => n.type === "ReturnStatement").length > 0;
     if (diverted.length && hasReturn) {
       out.push(mk(ctx, "SELL_RESTRICTION", "Sell proceeds diverted: on sell, tokens are credited to another address and the function returns", "critical", 0.75, diverted[0], g.fn,
-        snippet(ctx.source, diverted[0]),
+        sn(ctx, diverted[0]),
         `In the sell branch, balances are written to an address other than the recipient (${to}) and the function returns early, so the pair never receives the tokens - the sell silently fails or is confiscated.`));
     }
     // sell-only amount limit / fee variables handled by other rules, but flag sell branch that sets fee from an owner-set var
-    const feeAssign = collect(body, (n) => n.type === "BinaryOperation" && n.operator === "=" && identifiers(n.right).some((i) => c.stateVars.has(i) && FEE_NAME.test(i)));
+    const feeVars = feeStateVars(c);
+    const feeAssign = collect(body, (n) => n.type === "BinaryOperation" && n.operator === "=" && identifiers(n.right).some((i) => c.stateVars.has(i) && (FEE_NAME.test(i) || feeVars.has(i))));
     for (const fa of feeAssign) {
-      const vars = identifiers(fa.right).filter((i) => c.stateVars.has(i) && FEE_NAME.test(i));
+      const vars = identifiers(fa.right).filter((i) => c.stateVars.has(i) && (FEE_NAME.test(i) || feeVars.has(i)) && /^uint/.test(c.stateVars.get(i)!.typeStr));
       for (const v of vars) {
         const setters = privilegedSetters(c, v);
         if (!setters.length) continue;
@@ -278,7 +355,7 @@ export function ruleSellRestriction(ctx: Ctx): Finding[] {
         const denom = feeDenominator(c) ?? 100;
         if (b === "unbounded" || (typeof b === "number" && (b < 0 || b >= denom * 0.5))) {
           out.push(mk(ctx, "SELL_FEE_UNCAPPED", "Sell-side fee is owner-settable without an effective cap", "critical", 0.85, fa, g.fn,
-            `${snippet(ctx.source, fa)}  |  setter ${setters[0].fn.name}() ${b === "unbounded" ? "has no upper bound" : `allows up to ${b}/${denom}`}`,
+            `${sn(ctx, fa)}  |  setter ${setters[0].fn.name}() ${b === "unbounded" ? "has no upper bound" : `allows up to ${b}/${denom}`}`,
             `The fee applied specifically when selling comes from ${v}, which ${setters[0].fn.name}() (privileged) can set ${b === "unbounded" ? "to any value, including 100%" : `as high as ${b}/${denom}`}. Owner can turn every sell into a total loss after launch.`,
             [loc(ctx, setters[0].w.node, setters[0].fn)]));
         }
@@ -318,12 +395,12 @@ export function ruleBlacklistGate(ctx: Ctx): Finding[] {
       const s = setters[0];
       const arbitrary = s.fn.params.length > 0 && identifiers(s.w.target).some((i) => s.fn.params.includes(i));
       out.push(mk(ctx, "BLACKLIST_GATE", `Owner-controlled address blacklist blocks ${sellOnly ? "selling" : "transfers"}`, arbitrary ? "critical" : "high", BLACKLIST_NAME.test(v.name) ? 0.95 : 0.8, gate.node, gate.fn,
-        `${snippet(ctx.source, gate.cond)}  |  ${v.name} is written in ${s.fn.name}() [${s.fn.privilegeReason}]`,
+        `${sn(ctx, gate.cond)}  |  ${v.name} is written in ${s.fn.name}() [${s.fn.privilegeReason}]`,
         `The transfer path refuses when ${v.name}[addr] is set, and a privileged function can set it for ${arbitrary ? "any address passed as a parameter" : "addresses"} at any time. The owner can therefore freeze any holder's tokens after they buy - a targeted honeypot / rug mechanism that never shows up on-chain until the victim tries to sell.`,
         [loc(ctx, s.w.node, s.fn)]));
     } else if (openSetters.length) {
       out.push(mk(ctx, "BLACKLIST_GATE", "Publicly writable blacklist gates transfers", "critical", 0.7, openSetters[0].w.node, openSetters[0].fn,
-        snippet(ctx.source, openSetters[0].w.node), `Anyone can write ${v.name}, which the transfer path uses as a block condition.`));
+        sn(ctx, openSetters[0].w.node), `Anyone can write ${v.name}, which the transfer path uses as a block condition.`));
     } else {
       const autoWriters = [...c.functions.values()].filter((f) => c.transferPath.has(f.name) && f.writes.some((w) => w.base === v.name));
       if (autoWriters.length) {
@@ -347,17 +424,29 @@ export function ruleTradingGate(ctx: Ctx): Finding[] {
     if (!readInGate.length) continue;
     const setters = privilegedSetters(c, v.name);
     if (!setters.length) continue;
-    const canDisable = setters.some(({ fn, w }) => valueFromParam(fn, w) || assignsLiteral(w, false) || (w.value?.type === "UnaryOperation" && w.value.operator === "!"));
     const gate = readInGate[0];
+    // which value of the flag blocks transfers?  require(v) / if(!v) revert  -> false blocks;  require(!v) / if(v) revert -> true blocks
+    let blocking = gate.kind === "require" ? false : true;
+    walk(gate.cond, (n) => {
+      if (n.type === "UnaryOperation" && n.operator === "!" && identifiers(n.subExpression).includes(v.name)) blocking = !blocking;
+      if (n.type === "BinaryOperation" && n.operator === "==" && n.right?.type === "BooleanLiteral" && identifiers(n.left).includes(v.name)) blocking = gate.kind === "require" ? !n.right.value : n.right.value;
+    });
+    const canDisable = setters.some(({ fn, w }) => valueFromParam(fn, w) || assignsLiteral(w, blocking) || (w.value?.type === "UnaryOperation" && w.value.operator === "!"));
     const sellOnly = refsPair(c, gate.cond);
-    if (canDisable) {
+    const stdPausable = /^_?paused$/i.test(v.name) && setters.every(({ fn }) => /^_?(pause|unpause|_pause|_unpause|setPaused|emergencyPause|emergencyUnpause)$/i.test(fn.name)) && !sellOnly;
+    if (canDisable && stdPausable) {
+      out.push(mk(ctx, "TRADING_GATE", "Standard emergency pause (owner can halt all transfers)", "medium", 0.8, gate.node, gate.fn,
+        `${sn(ctx, gate.cond)}  |  ${v.name} toggled by ${setters.map((x) => x.fn.name + "()").join(", ")}`,
+        `OpenZeppelin-style Pausable: transfers stop while paused. This is a well-known centralisation control rather than a hidden trap, but holders depend on the pauser to unpause.`,
+        [loc(ctx, setters[0].w.node, setters[0].fn)]));
+    } else if (canDisable) {
       out.push(mk(ctx, "TRADING_GATE", sellOnly ? "Owner can switch selling off at any time" : "Owner can pause all transfers at any time", sellOnly ? "critical" : "high", 0.8, gate.node, gate.fn,
-        `${snippet(ctx.source, gate.cond)}  |  ${v.name} set in ${setters[0].fn.name}() [${setters[0].fn.privilegeReason}]`,
+        `${sn(ctx, gate.cond)}  |  ${v.name} set in ${setters[0].fn.name}() [${setters[0].fn.privilegeReason}]`,
         `The transfer path requires ${v.name}, and a privileged function can flip it back to false. ${sellOnly ? "Because the check only applies to transfers into the pair, buys keep working while sells are halted - a switchable honeypot." : "Holders can be locked in indefinitely."}`,
         [loc(ctx, setters[0].w.node, setters[0].fn)]));
     } else {
       out.push(mk(ctx, "TRADING_GATE", "One-way launch gate (owner enables trading once)", "low", 0.7, gate.node, gate.fn,
-        `${snippet(ctx.source, gate.cond)}  |  ${v.name} set only to true in ${setters[0].fn.name}()`,
+        `${sn(ctx, gate.cond)}  |  ${v.name} is only ever set to its non-blocking value in ${setters[0].fn.name}()`,
         `Transfers are blocked until the owner enables trading, and the flag can only be set to true. Common launch pattern; risk is limited to a pre-launch lock.`));
     }
   }
@@ -368,13 +457,13 @@ export function ruleUncappedFee(ctx: Ctx): Finding[] {
   const { c } = ctx;
   const out: Finding[] = [];
   const denom = feeDenominator(c);
-  const feeVarsRead = new Set<string>();
+  const arithVars = feeStateVars(c);
+  const sellAssigned = sellBranchAssigned(c);
+  const feeVarsRead = new Set<string>(arithVars);
   for (const fname of c.transferPath) {
     const f = c.functions.get(fname);
     if (!f?.node.body) continue;
     walk(f.node.body, (n) => {
-      if (n.type === "BinaryOperation" && (n.operator === "*" || n.operator === "/")) for (const i of identifiers(n)) if (c.stateVars.has(i) && !c.stateVars.get(i)!.isMapping) feeVarsRead.add(i);
-      if (isCallTo(n, ["mul", "div"])) for (const i of identifiers(n)) if (c.stateVars.has(i) && !c.stateVars.get(i)!.isMapping) feeVarsRead.add(i);
       if (n.type === "Identifier" && c.stateVars.has(n.name) && FEE_NAME.test(n.name) && /^uint/.test(c.stateVars.get(n.name)!.typeStr)) feeVarsRead.add(n.name);
     });
   }
@@ -388,7 +477,7 @@ export function ruleUncappedFee(ctx: Ctx): Finding[] {
     const s = setters[0];
     const b = upperBound(c, s.fn, [v, ...identifiers(s.w.value).filter((i) => s.fn.params.includes(i))]);
     const d = denom ?? 100;
-    const sellCtx = /sell/i.test(v);
+    const sellCtx = /sell/i.test(v) || sellAssigned.has(v);
     let sev: Severity | null = null, why = "";
     if (b === "unbounded") { sev = "high"; why = "has no upper bound at all"; }
     else if (typeof b === "number" && b < 0) { sev = "medium"; why = "is bounded only by another owner-settable variable"; }
@@ -397,11 +486,32 @@ export function ruleUncappedFee(ctx: Ctx): Finding[] {
     if (!sev) continue;
     if (sellCtx && sev === "high") sev = "critical";
     else if (sellCtx && sev === "medium") sev = "high";
-    out.push(mk(ctx, "UNCAPPED_FEE", `${sellCtx ? "Sell" : "Transfer"} fee ${v} is owner-settable and ${b === "unbounded" ? "uncapped" : "weakly capped"}`, sev, FEE_NAME.test(v) ? 0.85 : 0.55, s.w.node, s.fn,
-      `${snippet(ctx.source, s.w.node)} in ${s.fn.name}() [${s.fn.privilegeReason}]; ${v} is used in the transfer arithmetic`,
+    out.push(mk(ctx, "UNCAPPED_FEE", `${sellCtx ? "Sell" : "Transfer"} fee ${v} is owner-settable and ${b === "unbounded" ? "uncapped" : "weakly capped"}`, sev, FEE_NAME.test(v) ? 0.85 : arithVars.has(v) ? 0.8 : 0.55, s.w.node, s.fn,
+      `${sn(ctx, s.w.node)} in ${s.fn.name}() [${s.fn.privilegeReason}]; ${v} is used in the transfer arithmetic`,
       `${v} feeds the amount deducted on ${sellCtx ? "sells" : "transfers"}. Its setter ${why}, so the owner can raise the fee post-launch to confiscate most or all of every ${sellCtx ? "sell" : "transfer"}. A fee that can reach ~100% is a delayed honeypot.`));
   }
   return out;
+}
+
+/** classify a write to a mapping slot: same-slot arithmetic update vs. plain overwrite */
+export function writeKind(w: Assign): "increase" | "decrease" | "overwrite" | "other" {
+  if (w.operator === "+=" || w.operator === "++") return "increase";
+  if (w.operator === "-=" || w.operator === "--") return "decrease";
+  if (w.operator === "delete") return "overwrite";
+  if (w.operator !== "=" || !w.value) return "other";
+  const target = sn0(w.target);
+  const refsSelf = collect(w.value, (n) => (n.type === "IndexAccess" || n.type === "Identifier") && sn0(n) === target).length > 0;
+  const v = w.value;
+  const addLike = (n: Node) => (n.type === "BinaryOperation" && n.operator === "+") || (n.type === "FunctionCall" && /^(add|safeAdd|add96|add128|add256|_add)$/i.test(calleeName(n) ?? ""));
+  const subLike = (n: Node) => (n.type === "BinaryOperation" && n.operator === "-") || (n.type === "FunctionCall" && /^(sub|safeSub|sub96|sub128|sub256|_sub|subtract)$/i.test(calleeName(n) ?? ""));
+  if (refsSelf && addLike(v)) return "increase";
+  if (refsSelf && subLike(v)) return "decrease";
+  if (refsSelf) return "other";
+  return "overwrite";
+}
+/** structural key for an lvalue: base + index identifiers */
+function sn0(n: Node): string {
+  return `${baseName(n)}[${indexChain(n).map((i) => identifiers(i).join(".") || (i?.type ?? "?")).join("][")}]`;
 }
 
 function isMintLike(c: Contract, f: Func): { kind: "call" | "balance"; node: Node } | null {
@@ -411,8 +521,8 @@ function isMintLike(c: Contract, f: Func): { kind: "call" | "balance"; node: Nod
     if (isCallTo(n, ["_mint", "mint", "_mintTokens", "_issue", "issue"])) hit = { kind: "call", node: n };
   });
   if (hit) return hit;
-  const balInc = f.writes.find((w) => c.balanceVars.has(w.base) && (w.operator === "+=" || (w.operator === "=" && w.value?.type === "BinaryOperation" && w.value.operator === "+") || (w.operator === "=" && isCallTo(w.value, ["add"]))));
-  const supInc = f.writes.find((w) => c.supplyVars.has(w.base) && (w.operator === "+=" || (w.operator === "=" && (w.value?.type === "BinaryOperation" && w.value.operator === "+" || isCallTo(w.value, ["add"])))));
+  const balInc = f.writes.find((w) => c.balanceVars.has(w.base) && writeKind(w) === "increase");
+  const supInc = f.writes.find((w) => c.supplyVars.has(w.base) && writeKind(w) === "increase");
   if (balInc && supInc) return { kind: "balance", node: balInc.node };
   return null;
 }
@@ -428,16 +538,16 @@ export function ruleHiddenMint(ctx: Ctx): Finding[] {
     const named = /mint|issue|airdrop|reward|distribute|emit/i.test(f.name);
     const capped = named && upperBound(c, f, [...f.params, ...c.supplyVars]) !== "unbounded";
     if (f.privileged && capped) {
-      out.push(mk(ctx, "OWNER_MINT", "Owner can mint within a hard cap", "low", 0.8, m.node, f, `${snippet(ctx.source, m.node)} in ${f.name}() [${f.privilegeReason}]`, `Minting is privileged but bounded by a supply cap check in the same function.`));
+      out.push(mk(ctx, "OWNER_MINT", "Owner can mint within a hard cap", "low", 0.8, m.node, f, `${sn(ctx, m.node)} in ${f.name}() [${f.privilegeReason}]`, `Minting is privileged but bounded by a supply cap check in the same function.`));
       continue;
     }
     if (f.privileged) {
       out.push(mk(ctx, "HIDDEN_MINT", named ? "Owner can mint unlimited supply" : `Supply inflation hidden in '${f.name}()'`, named ? "medium" : "critical", named ? 0.8 : 0.8, m.node, f,
-        `${snippet(ctx.source, m.node)} in ${f.name}() [${f.privilegeReason}]`,
+        `${sn(ctx, m.node)} in ${f.name}() [${f.privilegeReason}]`,
         named ? `A privileged function mints new tokens with no cap. The owner can dilute holders or dump freshly minted supply into the pool.` : `A function whose name does not suggest minting (${f.name}) increases balances and total supply under owner control. This is a disguised inflation backdoor - the owner can print tokens and dump them.`));
     } else if (f.mutability !== "payable") {
       out.push(mk(ctx, "OPEN_MINT", `Anyone can mint via '${f.name}()'`, "critical", 0.75, m.node, f,
-        snippet(ctx.source, m.node), `A public, non-payable, unguarded function creates new tokens. Either a critical bug or an intentional backdoor for a co-conspirator address.`));
+        sn(ctx, m.node), `A public, non-payable, unguarded function creates new tokens. Either a critical bug or an intentional backdoor for a co-conspirator address.`));
     }
   }
   return out;
@@ -452,18 +562,22 @@ export function ruleBalanceManipulation(ctx: Ctx): Finding[] {
     for (const w of f.writes) {
       if (!c.balanceVars.has(w.base)) continue;
       const idx = indexChain(w.target)[0];
-      const arbitrary = idx && identifiers(idx).some((i) => f.params.includes(i));
-      if (w.operator === "=" || w.operator === "delete") {
-        out.push(mk(ctx, "BALANCE_MANIPULATION", `Owner can overwrite ${arbitrary ? "any holder's" : "a"} balance`, "critical", 0.9, w.node, f,
-          `${snippet(ctx.source, w.node)} in ${f.name}() [${f.privilegeReason}]`,
-          `A privileged function assigns the balance mapping directly${arbitrary ? " for an address supplied as a parameter" : ""}, bypassing transfer/allowance logic. Holdings can be zeroed or reassigned at will.`));
-      } else if (w.operator === "-=" || (w.operator === "=" && w.value?.type === "BinaryOperation" && w.value.operator === "-") || isCallTo(w.value, ["sub"])) {
-        out.push(mk(ctx, "BALANCE_MANIPULATION", `Owner can burn tokens from ${arbitrary ? "any address" : "holders"} without consent`, "high", 0.85, w.node, f,
-          `${snippet(ctx.source, w.node)} in ${f.name}()`,
+      const arbitrary = !!idx && identifiers(idx).some((i) => f.params.includes(i));
+      const kind = writeKind(w);
+      const readsAllowance = [...f.reads].some((r) => c.allowanceVars.has(r)) || [...f.calls].some((x) => /allowance|_spendAllowance/i.test(x));
+      const selfIdx = !!idx && isMsgSender(idx);
+      if (kind === "overwrite") {
+        out.push(mk(ctx, "BALANCE_MANIPULATION", `Owner can overwrite ${arbitrary ? "any holder's" : "a"} balance`, arbitrary ? "critical" : "high", 0.9, w.node, f,
+          `${sn(ctx, w.node)} in ${f.name}() [${f.privilegeReason}]`,
+          `A privileged function assigns the balance mapping directly${arbitrary ? " for an address supplied as a parameter" : " for a fixed address"}, bypassing transfer/allowance logic. Holdings can be zeroed or reassigned at will.`));
+      } else if (kind === "decrease") {
+        if (selfIdx || readsAllowance) continue; // self-burn or burnFrom-with-allowance: consented
+        out.push(mk(ctx, "BALANCE_MANIPULATION", `Owner can burn tokens from ${arbitrary ? "any address" : "holders"} without consent`, arbitrary ? "critical" : "medium", 0.85, w.node, f,
+          `${sn(ctx, w.node)} in ${f.name}()`,
           `A privileged function reduces another address's balance without an allowance or signature. Combined with a mint this becomes arbitrary confiscation.`));
-      } else if (w.operator === "+=" || (w.operator === "=" && w.value?.type === "BinaryOperation" && w.value.operator === "+")) {
-        out.push(mk(ctx, "BALANCE_MANIPULATION", "Balance increased under owner control without supply accounting", "high", 0.7, w.node, f,
-          `${snippet(ctx.source, w.node)} in ${f.name}()`,
+      } else if (kind === "increase") {
+        out.push(mk(ctx, "BALANCE_MANIPULATION", "Balance increased under owner control without supply accounting", arbitrary ? "high" : "medium", 0.7, w.node, f,
+          `${sn(ctx, w.node)} in ${f.name}()`,
           `Tokens are credited without touching total supply - a stealth mint that keeps totalSupply() looking unchanged.`));
       }
     }
@@ -481,10 +595,14 @@ export function ruleApprovalBypass(ctx: Ctx): Finding[] {
       if (!c.allowanceVars.has(w.base)) continue;
       const [ownerIdx] = indexChain(w.target);
       if (ownerIdx && isMsgSender(ownerIdx)) continue;
-      if (c.transferPath.has(f.name) && (w.operator === "-=" || (w.operator === "=" && (w.value?.type === "BinaryOperation" && w.value.operator === "-" || isCallTo(w.value, ["sub"]))))) continue; // normal allowance spend
+      const k = writeKind(w);
+      if (k === "decrease") continue; // spending an allowance can never grant one
+      if (k === "other") continue;
+      if (c.transferPath.has(f.name) && [...f.reads].some((r) => c.allowanceVars.has(r)) && k !== "overwrite") continue;
+      if (c.transferPath.has(f.name) && k === "overwrite" && w.value && identifiers(w.value).some((id) => !f.params.includes(id) && !c.stateVars.has(id))) continue; // allowances[src][spender] = newAllowance (local computed from the old allowance)
       if (f.privileged || /^(public|external|default)$/.test(f.visibility)) {
         out.push(mk(ctx, "APPROVAL_BYPASS", "Allowance mapping written on behalf of other holders", "critical", 0.85, w.node, f,
-          `${snippet(ctx.source, w.node)} in ${f.name}()${f.privileged ? ` [${f.privilegeReason}]` : " (unprivileged)"}`,
+          `${sn(ctx, w.node)} in ${f.name}()${f.privileged ? ` [${f.privilegeReason}]` : " (unprivileged)"}`,
           `The allowance of an arbitrary token owner is set outside approve(). Whoever controls this can grant themselves spending rights over every wallet and drain holders with transferFrom.`));
       }
     }
@@ -503,7 +621,7 @@ export function ruleApprovalBypass(ctx: Ctx): Finding[] {
       walk(tf.node.body, (n) => {
         if (n.type === "IfStatement" && identifiers(n.condition).some((i) => c.ownerVars.has(i)) && collect(n.condition, (x) => isMsgSender(x)).length) {
           out.push(mk(ctx, "APPROVAL_BYPASS", "transferFrom skips allowance check for the owner", "critical", 0.75, n, tf,
-            snippet(ctx.source, n.condition), `When the caller is the owner, the allowance branch is bypassed - the deployer can pull tokens from any holder.`));
+            sn(ctx, n.condition), `When the caller is the owner, the allowance branch is bypassed - the deployer can pull tokens from any holder.`));
         }
       });
     }
@@ -527,17 +645,19 @@ export function ruleOwnership(ctx: Ctx): Finding[] {
         `The function exists to make the token look renounced on explorers, but the owner variable is never cleared. Every onlyOwner backdoor stays live.`));
     } else if (backsUpOwner && backup) {
       out.push(mk(ctx, "FAKE_RENOUNCE", "Owner is backed up before renouncing (re-claimable ownership)", "high", 0.85, backup.node, ren,
-        snippet(ctx.source, backup.node),
+        sn(ctx, backup.node),
         `The previous owner address is stashed before ownership is set to zero. A companion function (typically lock()/unlock()/getUnlockTime) can restore it, so 'renounced' is cosmetic.`));
     }
   }
   for (const f of c.functions.values()) {
     if (f.isConstructor || OWNERSHIP_FN.test(f.name)) continue;
     for (const w of ownerWritten(f)) {
-      const fromBackup = w.value && identifiers(w.value).some((i) => /previous|_prev|backup|old/i.test(i));
+      const fromBackup = w.value && identifiers(w.value).some((i) => /previous|_prev|backup|old/i.test(i) || (c.stateVars.get(i)?.typeStr === "address" && !c.ownerVars.has(i)));
       const open = !f.privileged && /^(public|external|default)$/.test(f.visibility);
+      // renounce / transferOwnership by shape: privileged, value is address(0) or a parameter
+      if (f.privileged && w.value && (isZeroAddress(w.value) || identifiers(w.value).every((i) => f.params.includes(i)))) continue;
       out.push(mk(ctx, open ? "OPEN_OWNER_TAKEOVER" : "HIDDEN_OWNER_TRANSFER", open ? `Anyone can become owner via '${f.name}()'` : fromBackup ? `Ownership restored from backup in '${f.name}()'` : `Owner reassigned in unexpected function '${f.name}()'`, open ? "critical" : "high", 0.8, w.node, f,
-        `${snippet(ctx.source, w.node)} in ${f.name}()${f.privileged ? ` [${f.privilegeReason}]` : ""}`,
+        `${sn(ctx, w.node)} in ${f.name}()${f.privileged ? ` [${f.privilegeReason}]` : ""}`,
         open ? `An unguarded public function writes the owner variable. Any address can seize control.` : fromBackup ? `This is the second half of a fake renounce: a stashed address is written back into the owner slot.` : `Ownership changes outside transferOwnership/renounceOwnership are hidden from anyone auditing the standard functions.`));
     }
   }
@@ -553,16 +673,20 @@ export function ruleDangerousOps(ctx: Ctx): Finding[] {
       if (isCallTo(n, ["selfdestruct", "suicide"])) {
         const open = !f.privileged && /^(public|external|default)$/.test(f.visibility);
         out.push(mk(ctx, "SELFDESTRUCT", open ? "Unguarded selfdestruct" : "Owner can selfdestruct the contract", open ? "critical" : "high", 0.9, n, f,
-          `${snippet(ctx.source, n)} in ${f.name}()`, `selfdestruct removes the contract and sends its ETH to the target address; every holder's balance becomes unreachable.`));
+          `${sn(ctx, n)} in ${f.name}()`, `selfdestruct removes the contract and sends its ETH to the target address; every holder's balance becomes unreachable.`));
       }
       if (n.type === "FunctionCall" && n.expression?.type === "MemberAccess" && n.expression.memberName === "delegatecall") {
         const target = n.expression.expression;
         const tid = baseName(target);
         const settable = tid && (privilegedSetters(c, tid).length > 0 || f.params.includes(tid));
         const isThis = target?.type === "FunctionCall" && target.arguments?.[0]?.type === "Identifier" && target.arguments[0].name === "this";
-        if (!isThis) {
+        const proxyShape = f.name === "fallback" || /^_?(delegate|fallback|_implementation|delegateTo|_delegateTo)$/i.test(f.name) || (target?.type === "FunctionCall" && /implementation/i.test(calleeName(target) ?? "")) || (tid && /implementation|logic/i.test(tid));
+        if (!isThis && proxyShape) {
+          out.push(mk(ctx, "UPGRADEABLE_PROXY", "Upgradeable proxy: logic can be replaced by the proxy admin", "low", 0.8, n, f,
+            `${sn(ctx, n)} in ${f.name}()`, `Standard delegatecall proxy pattern. The implementation behind this address decides the real behaviour; analyze the implementation contract as well.`));
+        } else if (!isThis) {
           out.push(mk(ctx, "DELEGATECALL", settable ? "delegatecall to an owner-controlled address" : "delegatecall to external code", settable ? "critical" : "high", settable ? 0.85 : 0.6, n, f,
-            `${snippet(ctx.source, n)} in ${f.name}()`, `delegatecall executes foreign code in this contract's storage context. ${settable ? "Because the target is settable, the owner can swap in arbitrary logic (including balance rewrites) after launch." : "Any logic in the target can rewrite balances and ownership."}`));
+            `${sn(ctx, n)} in ${f.name}()`, `delegatecall executes foreign code in this contract's storage context. ${settable ? "Because the target is settable, the owner can swap in arbitrary logic (including balance rewrites) after launch." : "Any logic in the target can rewrite balances and ownership."}`));
         }
       }
     });
@@ -574,13 +698,14 @@ export function ruleExternalGateInTransfer(ctx: Ctx): Finding[] {
   const { c } = ctx;
   const out: Finding[] = [];
   const ROUTER_FN = /^(swapExactTokensForETH|swapExactTokensForETHSupportingFeeOnTransferTokens|swapExactTokensForTokens|swapExactTokensForTokensSupportingFeeOnTransferTokens|addLiquidity|addLiquidityETH|WETH|factory|getPair|createPair|sync|skim|getReserves|balanceOf|transfer|transferFrom|approve|allowance|totalSupply|decimals|token0|token1|getAmountsOut|sendValue|call|delegatecall|staticcall|send|push|pop|add|sub|mul|div|mod|min|max|toString|sqrt|encode|decode|encodePacked|keccak256|_msgSender|require|revert|assert|emit|super|owner)$/;
-  for (const fname of c.transferPath) {
+  for (const fname of c.coreTransferPath) {
     const f = c.functions.get(fname);
     if (!f?.node.body) continue;
     walk(f.node.body, (n) => {
       if (n.type !== "FunctionCall" || n.expression?.type !== "MemberAccess") return;
       const member = n.expression.memberName;
       if (ROUTER_FN.test(member)) return;
+      if (/^(current|increment|decrement|latest|length|toString|min|max|abs|pow|sqrt|mulDiv|wrap|unwrap)$/.test(member)) return;
       const recv = n.expression.expression;
       // I(addr).fn(...) or addr.fn(...)
       let addrId: string | null = null;
@@ -588,13 +713,15 @@ export function ruleExternalGateInTransfer(ctx: Ctx): Finding[] {
       else addrId = baseName(recv);
       if (!addrId || addrId === "this" || addrId === "super" || addrId === "msg" || addrId === "address") return;
       const sv = c.stateVars.get(addrId);
-      if (!sv || sv.isConstant) return;
+      if (!sv || sv.isConstant || sv.isMapping) return;
+      if (!(sv.typeStr === "address" || sv.typeStr === "address payable" || /^[A-Z]/.test(sv.typeStr))) return; // must be an address or contract-typed var, not a struct/library
+      if (/^(Counters?\.Counter|Checkpoints?|EnumerableSet|EnumerableMap|BitMaps?|Strings|SafeMath|Math)/.test(sv.typeStr)) return;
       if (c.pairVars.has(addrId) || /router|factory|weth/i.test(addrId)) return;
       const setters = privilegedSetters(c, addrId);
       const argsRefFromTo = n.arguments?.some((a: Node) => identifiers(a).some((i) => f.params.includes(i)));
-      const sev: Severity = setters.length ? "critical" : "high";
+      const sev: Severity = setters.length ? "critical" : "medium";
       out.push(mk(ctx, "EXTERNAL_TRANSFER_HOOK", setters.length ? "Transfer logic delegated to an owner-replaceable external contract" : "Transfer logic depends on an external contract", sev, argsRefFromTo ? 0.8 : 0.6, n, f,
-        `${snippet(ctx.source, n)} in ${f.name}()${setters.length ? `; ${addrId} set in ${setters[0].fn.name}()` : ""}`,
+        `${sn(ctx, n)} in ${f.name}()${setters.length ? `; ${addrId} set in ${setters[0].fn.name}()` : ""}`,
         `The transfer path calls out to ${addrId}.${member}(). The rules that decide whether a transfer succeeds live in code that is not in this file${setters.length ? " and can be swapped by the owner at any time" : ""}. This is how honeypots hide the sell-block: the visible token looks clean, the external 'checker' does the blocking.`,
         setters.length ? [loc(ctx, setters[0].w.node, setters[0].fn)] : undefined));
     });
@@ -628,7 +755,7 @@ export function ruleHiddenWithdraw(ctx: Ctx): Finding[] {
     if (!node) continue;
     const honest = WITHDRAW_NAME.test(f.name);
     out.push(mk(ctx, "PRIVILEGED_WITHDRAW", honest ? `Owner can withdraw contract funds via '${f.name}()'` : `Funds are sent to the owner inside '${f.name}()' (name does not suggest a withdrawal)`, honest ? "low" : "medium", honest ? 0.8 : 0.7, node, f,
-      `${what}: ${snippet(ctx.source, node)} [${f.privilegeReason}]`,
+      `${what}: ${sn(ctx, node)} [${f.privilegeReason}]`,
       honest ? `Centralisation risk: ETH/tokens held by the contract (e.g. collected fees, presale funds) can be pulled by the owner at any time.` : `A function whose name hides its purpose moves contract funds to the owner. Hidden withdrawal paths are a classic rug component.`));
   }
   return out;
@@ -642,7 +769,7 @@ export function ruleMisc(ctx: Ctx): Finding[] {
     if (!f.node.body) continue;
     walk(f.node.body, (n) => {
       if (n.type === "BinaryOperation" && (n.operator === "==" || n.operator === "!=") && (isTxOrigin(n.left) || isTxOrigin(n.right)) && !(isMsgSender(n.left) || isMsgSender(n.right))) {
-        out.push(mk(ctx, "TX_ORIGIN_AUTH", "tx.origin used for authorization", "low", 0.7, n, f, snippet(ctx.source, n), `tx.origin checks are phishable and often used to whitelist the deployer's EOA in a way that is hard to spot.`));
+        out.push(mk(ctx, "TX_ORIGIN_AUTH", "tx.origin used for authorization", "low", 0.7, n, f, sn(ctx, n), `tx.origin checks are phishable and often used to whitelist the deployer's EOA in a way that is hard to spot.`));
       }
     });
   }
@@ -658,7 +785,7 @@ export function ruleMisc(ctx: Ctx): Finding[] {
       const amtSide = sides.findIndex((s) => refsIdent(s, amt));
       if (amtSide < 0) return;
       const other = sides[1 - amtSide];
-      const lim = identifiers(other).find((i) => c.stateVars.has(i) && !c.stateVars.get(i)!.isConstant);
+      const lim = identifiers(other).find((i) => c.stateVars.has(i) && !c.stateVars.get(i)!.isConstant && !c.stateVars.get(i)!.isMapping);
       if (!lim) return;
       const setters = privilegedSetters(c, lim).filter(({ fn, w }) => valueFromParam(fn, w));
       if (!setters.length) return;
@@ -675,7 +802,7 @@ export function ruleMisc(ctx: Ctx): Finding[] {
       if (lower) return;
       const sell = inSellBranch(c, g) || refsPair(c, g.cond);
       out.push(mk(ctx, "OWNER_LIMIT_TO_ZERO", `${sell ? "Sell" : "Transfer"} amount limit ${lim} can be set to zero by the owner`, sell ? "critical" : "medium", sell ? 0.8 : 0.7, g.node, f,
-        `${snippet(ctx.source, g.cond)}  |  ${lim} set in ${s.fn.name}() without a lower bound`,
+        `${sn(ctx, g.cond)}  |  ${lim} set in ${s.fn.name}() without a lower bound`,
         `Transfers are rejected when amount exceeds ${lim}. The setter has no minimum, so the owner can set it to 0 (or 1 wei) and effectively stop ${sell ? "sells" : "all transfers"} while the code still looks like a harmless anti-whale limit.`,
         [loc(ctx, s.w.node, s.fn)]));
     });
@@ -689,7 +816,7 @@ export function ruleMisc(ctx: Ctx): Finding[] {
       if (n.type === "FunctionCall" && n.expression?.type === "MemberAccess" && (n.expression.memberName === "transfer" || n.expression.memberName === "send") && isMsgSender(n.expression.expression) && n.arguments?.some(isThisBal)) hit = "ETH";
       if (n.type === "FunctionCall" && n.expression?.type === "FunctionCallOptions" && n.expression.expression?.memberName === "call" && isMsgSender(n.expression.expression.expression) && n.expression.arguments?.some?.(isThisBal)) hit = "ETH";
       if (n.type === "FunctionCall" && n.expression?.type === "MemberAccess" && n.expression.memberName === "transfer" && n.arguments?.length === 2 && isMsgSender(n.arguments[0]) && collect(n.arguments[1], (x) => x.type === "MemberAccess" && x.memberName === "balanceOf").length) hit = "ERC20";
-      if (hit) out.push(mk(ctx, "OPEN_DRAIN", `Anyone can drain the contract's ${hit} via '${f.name}()'`, "critical", 0.8, n, f, snippet(ctx.source, n), `An unguarded function transfers the contract's entire ${hit} balance to whoever calls it. Either a fatal bug or a backdoor for a pre-arranged address.`));
+      if (hit) out.push(mk(ctx, "OPEN_DRAIN", `Anyone can drain the contract's ${hit} via '${f.name}()'`, "critical", 0.8, n, f, sn(ctx, n), `An unguarded function transfers the contract's entire ${hit} balance to whoever calls it. Either a fatal bug or a backdoor for a pre-arranged address.`));
     });
   }
   // unresolved non-standard base contracts => note

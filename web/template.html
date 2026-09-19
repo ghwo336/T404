@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>noexit — offline Solidity threat scanner</title>
+<style>
+  :root { --bg:#0E1116; --panel:#181C23; --panel2:#0A0C10; --border:#2A303A; --text:#F4F5F2; --mute:#A3AAB5; --red:#FF6B6B; --amber:#F5C451; --green:#3DD68C; --blue:#7CB8FF; }
+  * { box-sizing:border-box; }
+  html, body { height:100%; margin:0; overflow:hidden; }
+  body { background:var(--bg); color:var(--text); font:15px/1.45 "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif; display:flex; flex-direction:column; }
+  code, pre, .mono { font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  header { display:flex; align-items:center; gap:16px; padding:12px 20px; border-bottom:1px solid var(--border); background:var(--panel); }
+  header h1 { font-size:20px; margin:0; letter-spacing:-0.5px; } header h1 span { color:var(--red); }
+  header .tag { color:var(--mute); font-size:13px; }
+  header .sp { flex:1; }
+  header button, header label { background:transparent; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:7px 12px; font-size:13px; cursor:pointer; }
+  header button:hover, header label:hover { border-color:var(--mute); }
+  header input { display:none; }
+  #status { color:var(--mute); font-size:13px; }
+  #empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; margin:24px; border:2px dashed var(--border); border-radius:20px; color:var(--mute); text-align:center; }
+  #empty.over { border-color:var(--red); color:var(--text); }
+  #empty h2 { font-size:28px; margin:0; color:var(--text); }
+  #empty .sub { max-width:640px; }
+  #empty .buttons { display:flex; gap:10px; }
+  #empty .buttons label, #empty .buttons button { background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 16px; cursor:pointer; font-size:14px; }
+  #empty input { display:none; }
+  #main { display:none; flex:1; min-height:0; grid-template-columns:320px 1fr 1fr; }
+  #main > * { min-width:0; min-height:0; }
+  #files { overflow:auto; border-right:1px solid var(--border); }
+  .file { padding:12px 14px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .file:hover { background:var(--panel); } .file.sel { background:var(--panel); border-left:3px solid var(--red); }
+  .file-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+  .file-name { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .file-sum { color:var(--mute); font-size:12.5px; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lib { color:var(--mute); font-weight:400; font-size:12px; }
+  .score { color:var(--mute); font-size:13px; }
+  .badge { display:inline-block; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
+  .badge.malicious { background:rgba(255,107,107,.15); color:var(--red); } .badge.uncertain { background:rgba(245,196,81,.15); color:var(--amber); } .badge.benign { background:rgba(61,214,140,.15); color:var(--green); }
+  #detail { overflow:auto; padding:18px 22px; border-right:1px solid var(--border); }
+  .head { margin-bottom:18px; } .head .big { font-size:34px; font-weight:700; margin-left:10px; } .head .path { color:var(--mute); font-size:13px; margin-top:4px; word-break:break-all; }
+  .dim { color:var(--mute); } .small { font-size:12.5px; } .warn { color:var(--amber); }
+  .finding { background:var(--panel); border:1px solid var(--border); border-left-width:5px; border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+  .finding.critical { border-left-color:var(--red); } .finding.high { border-left-color:#ff9c6b; } .finding.medium { border-left-color:var(--amber); } .finding.low { border-left-color:var(--blue); }
+  .f-top { display:flex; gap:10px; align-items:center; font-size:12.5px; flex-wrap:wrap; }
+  .sev { text-transform:uppercase; font-weight:700; letter-spacing:0.5px; } .sev.critical { color:var(--red); } .sev.high { color:#ff9c6b; } .sev.medium { color:var(--amber); } .sev.low { color:var(--blue); }
+  .id { font-family:"JetBrains Mono", monospace; font-weight:600; }
+  .jump { margin-left:auto; color:var(--blue); cursor:pointer; text-decoration:none; } .jump:hover { text-decoration:underline; }
+  .f-title { font-size:16px; font-weight:600; margin:6px 0; }
+  .snip { background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:12.5px; white-space:pre-wrap; word-break:break-all; margin:6px 0; color:#d5d9e0; }
+  .f-why { color:#cdd2da; font-size:13.5px; }
+  .path { margin:10px 0 4px; padding-left:22px; font-size:13.5px; } .path li { margin:3px 0; } .path li::marker { color:var(--amber); font-weight:700; }
+  .checks { margin-top:14px; background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:12px 16px; }
+  .checks-title { color:var(--mute); font-size:12.5px; margin-bottom:6px; }
+  .check { display:grid; grid-template-columns:18px 230px 1fr; gap:8px; font-size:13px; padding:3px 0; align-items:start; }
+  .check .mark { font-weight:700; } .check.pass .mark { color:var(--green); } .check.fail .mark { color:var(--red); }
+  #srcpane { display:flex; flex-direction:column; min-height:0; }
+  #src-name { padding:8px 14px; border-bottom:1px solid var(--border); color:var(--mute); font-size:12.5px; font-family:"JetBrains Mono", monospace; }
+  #src { overflow:auto; flex:1; position:relative; font-family:"JetBrains Mono", monospace; font-size:12.5px; line-height:1.5; background:var(--panel2); }
+  .ln { display:flex; } .ln .no { width:56px; flex:none; text-align:right; padding-right:12px; color:#4b5261; user-select:none; } .ln .code { white-space:pre; padding-right:16px; }
+  .ln.mark { background:rgba(245,196,81,.10); } .ln.mark.critical, .ln.mark.high { background:rgba(255,107,107,.16); } .ln.cur .no { color:var(--text); }
+  .ln.cur { outline:1px solid rgba(255,255,255,.18); }
+  @media (max-width: 1100px) { #main { grid-template-columns:260px 1fr; } #srcpane { display:none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1><span>no</span>exit</h1><span class="tag">offline Solidity threat scanner <span id="ver"></span> — nothing leaves this page</span>
+  <span class="sp"></span>
+  <span id="status"></span>
+  <button id="samples">Load bundled samples</button>
+  <label>Open files<input id="pick" type="file" multiple accept=".sol"></label>
+  <label>Open folder<input id="pickdir" type="file" webkitdirectory multiple></label>
+  <button id="export">Export JSON</button>
+  <button id="reset">Clear</button>
+</header>
+<div id="empty">
+  <h2>Drop .sol files or a folder here</h2>
+  <div class="sub">Every file is parsed and judged in your browser: no compiler, no RPC, no LLM, no network. Imports are resolved inside what you dropped.</div>
+  <div class="buttons"><button onclick="document.getElementById('samples').click()">Try the bundled samples</button><label>Choose files<input type="file" multiple accept=".sol" onchange="document.getElementById('pick').files=this.files;document.getElementById('pick').dispatchEvent(new Event('change'))"></label></div>
+</div>
+<div id="main">
+  <div id="files"></div>
+  <div id="detail"></div>
+  <div id="srcpane"><div id="src-name"></div><div id="src"></div></div>
+</div>
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

@@ -1,20 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
-
-abstract contract Context { function _msgSender() internal view virtual returns (address) { return msg.sender; } }
-contract Ownable is Context {
-    address private _owner;
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-    constructor() { _owner = _msgSender(); emit OwnershipTransferred(address(0), _owner); }
-    function owner() public view returns (address) { return _owner; }
-    modifier onlyOwner() { require(_owner == _msgSender(), "Ownable: caller is not the owner"); _; }
-    function renounceOwnership() public virtual onlyOwner { emit OwnershipTransferred(_owner, address(0)); _owner = address(0); }
-    function transferOwnership(address newOwner) public virtual onlyOwner { require(newOwner != address(0)); emit OwnershipTransferred(_owner, newOwner); _owner = newOwner; }
-}
-interface IUniswapV2Factory { function createPair(address tokenA, address tokenB) external returns (address pair); }
-interface IUniswapV2Router02 { function factory() external pure returns (address); function WETH() external pure returns (address); }
-
-
+import "./Context.sol";
 contract ERC20 is Context {
     mapping(address => uint256) internal _balances;
     mapping(address => mapping(address => uint256)) internal _allowances;
@@ -43,14 +29,4 @@ contract ERC20 is Context {
     }
     function _mint(address to, uint256 amount) internal { _totalSupply += amount; _balances[to] += amount; emit Transfer(address(0), to, amount); }
     function _approve(address o, address s, uint256 amount) internal { _allowances[o][s] = amount; emit Approval(o, s, amount); }
-}
-
-contract PausableToken is ERC20, Ownable {
-    bool public halted;
-    constructor() ERC20("Pausable", "PSD") { _mint(msg.sender, 1e27); }
-    function halt(bool h) external onlyOwner { halted = h; }
-    function _transfer(address from, address to, uint256 amount) internal override {
-        require(!halted, "halted");
-        super._transfer(from, to, amount);
-    }
 }

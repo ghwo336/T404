@@ -3,3 +3,6 @@ dist/
 report.json
 *.log
 .DS_Store
+.env
+bench/src/
+bench/out/

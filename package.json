@@ -7,7 +7,9 @@
     "build": "tsc -p tsconfig.json",
     "scan": "tsx src/cli.ts scan",
     "test": "tsx test/run.ts",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "bench": "tsc -p bench/tsconfig.json && node bench/out/bench/run.js",
+    "web": "node web/build.mjs"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
+    "esbuild": "^0.28.2",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   },
