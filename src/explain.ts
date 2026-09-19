@@ -93,6 +93,76 @@ export function attackPath(f: Finding): string[] | undefined {
       return [`${f.severity === "critical" ? "Anyone" : "Owner"} calls ${fnOf(at)} [${L(at)}].`, "The contract code is removed; every balance becomes unreachable and ETH goes to the chosen address."];
     case "DELEGATECALL":
       return [`${fnOf(at)} [${L(at)}] executes foreign code in this contract's storage.`, "That code can rewrite balances, allowances and the owner slot."];
+    case "APPROVAL_HARVEST":
+      return [
+        "Victim is lured into approving this contract (an 'eligibility check', a marketplace listing, a fake airdrop claim). The approval itself looks harmless.",
+        `${/privileged|\[/.test(f.evidence) ? "The operator" : "Anyone"} calls ${fnOf(at)} with the victim's address as 'from': ${L(at)}: \`${at.snippet}\`.`,
+        "transferFrom() succeeds because the allowance exists; the tokens land with the collector, and nothing is credited back.",
+        "Result: every wallet that ever approved this contract can be emptied, in batches, at any later time.",
+      ];
+    case "HIDDEN_CALLER_BRANCH":
+      return [
+        "Every ordinary transfer runs the honest branch: debit sender, credit recipient.",
+        `When the caller is the hidden address, ${L(at)} takes the other branch: \`${at.snippet}\`.`,
+        "That branch credits a balance with no matching debit (and returns before the normal accounting), so tokens appear from nowhere.",
+        "Result: the hidden address mints at will and dumps into the pool; totalSupply() and the verified source both look normal to a casual reader.",
+      ];
+    case "WITHDRAW_REDIRECT":
+      return [
+        "Users deposit ETH; their balance mapping grows and the contract looks like a normal bank.",
+        `A user calls ${fnOf(at)}: their recorded balance is zeroed, then ${L(at)}: \`${at.snippet}\` sends the ETH to the owner instead.`,
+        "The user's transaction succeeds, so wallets and explorers show a normal 'withdraw' - only the recipient is wrong.",
+        "Result: deposits can only ever leave towards the operator; 'withdraw' is the rug.",
+      ];
+    case "OBFUSCATED_RECIPIENT":
+      return [
+        "The recipient is not written as an address literal but reconstructed at runtime (constant XOR/arith, uint160 cast).",
+        `Every call that reaches ${L(at)} pays that computed address: \`${at.snippet}\`.`,
+        "A reviewer scanning for wallet addresses in the verified source finds none; explorers do not link the constant to a known wallet.",
+        "Result: a silent skim on every transaction, deliberately hidden from source review.",
+      ];
+    case "UNSATISFIABLE_PAYOUT":
+      return [
+        "Contract is seeded with a visible ETH balance as bait ('send X, receive 2X').",
+        `Victim sends ETH. At ${L(at)} the check \`${at.snippet}\` compares msg.value against a balance that already includes msg.value.`,
+        "The comparison can only hold when the contract held nothing before - so the payout never fires while there is bait.",
+        "Result: the victim's ETH stays in the contract; the owner withdraws everything through the privileged withdraw().",
+      ];
+    case "RIGGED_PAYOUT":
+      return [
+        "A 'guess the answer / crack the password' game is deployed with an ETH prize and an apparently readable answer hash.",
+        `The operator (re)sets the stored answer via ${setter ?? "a setter that runs outside the constructor"} - possibly in a transaction that is not visible with the deployment.`,
+        `Victim pays to guess; ${L(at)}: \`${at.snippet}\` compares against the value the operator chose, so no guess ever matches.`,
+        "Result: every attempt's msg.value accumulates; the operator drains it with the privileged stop/withdraw function.",
+      ];
+    case "PAYMENT_HIJACK":
+      return [
+        "A wallet, dApp prompt or phishing page asks the victim to call a function with a reassuring name (SecurityUpdate, Claim, Verify).",
+        `The function is payable; ${L(at)}: \`${at.snippet}\` forwards msg.value to the owner.`,
+        "Nothing is minted, recorded or returned to the caller - the contract state does not even remember the payment.",
+        "Result: the ETH is gone the moment the transaction confirms.",
+      ];
+    case "OPAQUE_DEPENDENCY":
+      return [
+        "Deposits work and are recorded, building trust and a visible balance.",
+        `Withdrawals call an external contract that the deployer supplied at deployment: ${L(at)}: \`${at.snippet}\`.`,
+        "That contract's code is not in this source and can revert on the withdrawal path (or only for non-owner callers), blocking every exit while deposits keep succeeding.",
+        "Result: a bank that only accepts. This is the well-known 'private bank + logger' honeypot shape.",
+      ];
+    case "REENTRANCY":
+      return [
+        `${fnOf(at)} sends ETH with a gas-forwarding call before it updates the caller's balance: ${L(at)}: \`${at.snippet}\`.`,
+        "A contract recipient re-enters the same function from its receive()/fallback while the balance is still unchanged.",
+        "Each re-entry passes the balance check again and sends again, until the pool is empty.",
+        "Result: anyone can drain all user deposits. Not proof of malicious intent - but the funds are exposed, and honeypots use this exact shape deliberately.",
+      ];
+    case "TX_ORIGIN_VALUE":
+      return [
+        "The owner is lured into calling any function on an attacker contract (a fake airdrop, a 'verify wallet' button).",
+        `The attacker contract calls ${fnOf(at)} in the same transaction; tx.origin is still the owner, so ${L(at)}: \`${at.snippet}\` passes.`,
+        "The value transfer that the check protects executes with the attacker-chosen parameters.",
+        "Result: a phishable guard on money - the funds can be moved by anyone who can get the owner to click.",
+      ];
     default:
       return undefined;
   }

@@ -162,20 +162,29 @@ Every rule reasons about *who can write what* and *what the transfer path does w
 | `VIEW_CALLER_DEPENDENT` | `balanceOf` / `totalSupply` branch on `msg.sender` or the owner: explorers see one number, the transfer logic uses another. | high |
 | `DRAIN_APPROVAL_PULL` | A public function calls `transferFrom(msg.sender, <owner or hard-coded address>, …)` on a foreign token with nothing credited back: the contract half of an approval-phishing drainer. | critical |
 | `CUSTODY_SWEEP` | The contract records user ETH deposits per address, and a privileged function sends `address(this).balance` out. | critical |
+| `APPROVAL_HARVEST` | `transferFrom(<parameter>, <owner / collector / privileged caller>, …)` on a foreign token: anyone who ever approved the contract can be emptied later (NFT "marketplace helper", "eligibility check" drainers). | critical |
+| `HIDDEN_CALLER_BRANCH` | Inside the transfer path, an `if (msg.sender == <hard-coded address or hidden state var>)` branch that credits a balance with no debit (and usually returns early). | critical |
+| `WITHDRAW_REDIRECT` | A public function zeroes/decreases `balances[msg.sender]` but sends the ETH to the owner or a fixed address instead of the caller. | critical |
+| `OBFUSCATED_RECIPIENT` | Value sent to `address(uint160(K ^ …))` / an arithmetic-reconstructed or hard-coded address — a fee wallet hidden from source review. | critical / high |
+| `UNSATISFIABLE_PAYOUT` | Payout to the caller guarded by `msg.value >= address(this).balance`, which already includes `msg.value` — the "multiplicator" honeypot. | critical |
+| `RIGGED_PAYOUT` | Payout to the caller gated on equality with a stored hash/answer that a non-constructor function can rewrite — "guess the password / quiz" honeypots. | critical |
+| `PAYMENT_HIJACK` | A public payable function (`SecurityUpdate()`, `Claim()`…) forwards `msg.value` to the owner and credits the caller nothing. | high |
+| `OPAQUE_DEPENDENCY` | The user's withdrawal path calls a contract-typed state variable that was set from a constructor argument — the "private bank + logger" honeypot. | high |
+| `REENTRANCY`, `TX_ORIGIN_VALUE` | Exploitable bugs on the value path (gas-forwarding send before the balance write; `tx.origin` guarding a transfer). Flagged as *vulnerability*: the verdict is capped at `Uncertain` because funds are exposed without proof of intent. | high (→ Uncertain) |
 | `EXIT_CALLBACK_CYCLE`, `FEE_ADDR_MUTABLE`, `UPGRADEABLE_PROXY` | Transfer re-entering itself with a contract-controlled address; privileged-mutable fee recipient; single-key upgrade authority. | high / medium |
 | `AUTO_BLACKLIST`, `TX_ORIGIN_AUTH`, `UNRESOLVED_BASE` | Informational context that lowers verdict confidence. | medium / low / info |
 
 ### 3. Verdict
 Findings are weighted by severity × confidence (a low-confidence finding is downgraded one level).
-`Malicious` = at least one confident critical or high finding (every high is an asset-loss or asymmetric-control path). `Uncertain` = two mediums, or a medium plus unresolved base contracts. Otherwise `Benign`.
+`Malicious` = at least one confident critical or high finding (every high is an asset-loss or asymmetric-control path). `Uncertain` = an exploitable vulnerability on the value path (reentrancy, `tx.origin` guard), two mediums, or a medium plus unresolved base contracts. Otherwise `Benign`.
 
 ## Sample set
 
-`samples/` contains 34 judged contracts (22 malicious, 12 benign) plus helper files for the multi-file cases; `samples-public/` holds the track's five public samples covering the honeypot families seen in the wild — sell revert, owner blacklist, switchable selling, uncapped sell tax, hidden mint, fake renounce + `unlock()`, approval backdoor, external "guard" contract, balance rewrite, max-sell-to-zero, a full reflection-token clone with `bots[]` + `setSellTax`, an open-drain wallet, a multi-file project whose token file is spotless but whose imported `lib/ERC20.sol` skips allowances for the deployer, and four fully identifier-obfuscated variants — and benign controls that *look* similar (fair tax token with capped fees and a one-way launch gate, capped owner mint, OpenZeppelin-style token with unresolved imports, vesting, staking).
+`samples/` contains 52 judged contracts (33 malicious, 17 benign, 2 uncertain) plus helper files for the multi-file cases; `samples-public/` holds the track's five public samples covering the honeypot families seen in the wild — sell revert, owner blacklist, switchable selling, uncapped sell tax, hidden mint, fake renounce + `unlock()`, approval backdoor, external "guard" contract, balance rewrite, max-sell-to-zero, a full reflection-token clone with `bots[]` + `setSellTax`, an open-drain wallet, a multi-file project whose token file is spotless but whose imported `lib/ERC20.sol` skips allowances for the deployer, four fully identifier-obfuscated variants, and the classic ETH honeypot families (rigged password/quiz games, the multiplicator, "security update" payment hijack, private-bank logger, NFT approval harvester, withdraw-redirect bank, XOR-obfuscated fee recipient, hidden hard-coded-caller branch) — and benign controls that *look* similar (fair tax token with capped fees and a one-way launch gate, capped owner mint, OpenZeppelin-style token with unresolved imports, vesting, staking, a proper vault, escrow, multisig, WETH9). `samples/uncertain/` holds two textbook *vulnerable* contracts (reentrant store, `tx.origin` wallet) that must come back `Uncertain`, not `Malicious`.
 
 ```
 $ npm test
-34 passed, 0 failed
+52 passed, 0 failed
 ```
 
 ## Real-world benchmark

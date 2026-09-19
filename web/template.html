@@ -181,7 +181,7 @@
         <div class="stat"><b data-count="217">0</b><span>real contracts benchmarked</span></div>
         <div class="stat"><b data-count="87.2" data-suffix="%" data-dec="1">0</b><span>recall on labeled backdoors</span></div>
         <div class="stat"><b data-count="0.901" data-dec="3">0</b><span>F1 · precision 93.2%</span></div>
-        <div class="stat"><b data-count="24">0</b><span>logic rules · 0 network calls</span></div>
+        <div class="stat"><b data-count="38">0</b><span>logic rules · 0 network calls</span></div>
       </div>
     </div>
     <div id="drop">
@@ -189,7 +189,7 @@
       <h2>Drop .sol files or a folder</h2>
       <p>Imports are resolved inside what you drop. Everything runs in a Web Worker in this tab.</p>
       <div class="btns">
-        <button class="primary samples">Try 34 bundled samples</button>
+        <button class="primary samples">Try 52 bundled samples</button>
         <label class="btn">Choose files<input class="pick" type="file" multiple accept=".sol"></label>
         <label class="btn">Choose folder<input class="pick" type="file" webkitdirectory multiple></label>
       </div>
@@ -197,7 +197,7 @@
   </div>
   <div class="how">
     <div><span class="n">01 · model</span><b>Roles from behaviour, not names</b><p>The mapping that balanceOf() returns is the balance map; the address compared with to/from on the transfer path is the pair; the address compared with msg.sender in a modifier is the owner. Rename everything to _q1, _q2 — same result.</p></div>
-    <div><span class="n">02 · rules</span><b>Who can write what the exit path reads</b><p>24 rules follow privileged writes into the transfer path's require / revert / fee arithmetic / balance writes, through locals, state-to-state copies and internal calls.</p></div>
+    <div><span class="n">02 · rules</span><b>Who can write what the exit path reads</b><p>38 rules follow privileged writes into the transfer path's require / revert / fee arithmetic / balance writes, through locals, state-to-state copies and internal calls.</p></div>
     <div><span class="n">03 · verdict</span><b>Evidence or nothing</b><p>Every Malicious verdict carries a line, the privileged trigger and a numbered attack path; every Benign verdict carries the 12 checks it passed.</p></div>
   </div>
   <div class="foot">TRUST404 · github.com/ghwo336/T404 · MIT</div>

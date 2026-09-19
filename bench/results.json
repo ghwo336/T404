@@ -103,9 +103,9 @@
     "label": "Malicious",
     "category": "GenerateToken",
     "verdict": "Malicious",
-    "score": 76,
+    "score": 100,
     "note": "",
-    "top": "BLACKLIST_GATE,UNCAPPED_FEE",
+    "top": "BLACKLIST_GATE,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -893,9 +893,9 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 46,
+    "score": 65,
     "note": "",
-    "top": "BLACKLIST_GATE,PRIVILEGED_WITHDRAW",
+    "top": "BLACKLIST_GATE,PAYMENT_HIJACK",
     "parseErrors": 0
   },
   {
@@ -1315,7 +1315,7 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BALANCE_MANIPULATION,BLACKLIST_GATE",
+    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -1325,7 +1325,7 @@
     "verdict": "Malicious",
     "score": 100,
     "note": "",
-    "top": "BALANCE_MANIPULATION,BLACKLIST_GATE",
+    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -1583,9 +1583,9 @@
     "label": "Malicious",
     "category": "FreezeAccount",
     "verdict": "Malicious",
-    "score": 85,
+    "score": 100,
     "note": "",
-    "top": "BALANCE_MANIPULATION,BLACKLIST_GATE",
+    "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
     "parseErrors": 0
   },
   {
@@ -2173,7 +2173,7 @@
     "label": "Benign",
     "category": "ENJ",
     "verdict": "Malicious",
-    "score": 26,
+    "score": 66,
     "note": "",
     "top": "BALANCE_MANIPULATION,BALANCE_MANIPULATION",
     "parseErrors": 0

@@ -52,7 +52,7 @@ Sources: Pied-Piper backdoor list (TOSEM 2022, 189 Ethereum ERC-20 contracts) + 
 | OMG | Malicious | 88 | HIDDEN_MINT,HIDDEN_MINT |  |
 | CRO | Malicious | 41 | HIDDEN_MINT |  |
 | QNT | Benign | 7 | BALANCE_MANIPULATION |  |
-| ENJ | Malicious | 26 | BALANCE_MANIPULATION,BALANCE_MANIPULATION |  |
+| ENJ | Malicious | 66 | BALANCE_MANIPULATION,BALANCE_MANIPULATION |  |
 
 ## Missed / uncertain backdoors
 

@@ -21,6 +21,7 @@ export interface Finding {
   reasoning: string; // why this is dangerous (logic / privilege explanation)
   related?: Location[];
   attackPath?: string[]; // step-by-step replay of how the finding is exploited
+  vulnerability?: boolean; // exploitable bug rather than designed-in intent: caps the verdict at Uncertain instead of Malicious
 }
 
 export interface Check {

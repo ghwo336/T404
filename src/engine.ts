@@ -12,10 +12,11 @@ const WEIGHT: Record<Severity, number> = { critical: 45, high: 22, medium: 8, lo
 
 export function verdictFor(findings: Finding[]): { verdict: Verdict; score: number; summary: string } {
   let score = 0;
-  let crit = 0, high = 0, med = 0;
+  let crit = 0, high = 0, med = 0, vuln = 0;
   for (const f of findings) {
     const eff = f.confidence >= 0.75 ? f.severity : downgrade(f.severity);
     score += WEIGHT[eff] * (0.5 + f.confidence / 2);
+    if (f.vulnerability) { if (eff === "critical" || eff === "high") vuln++; else if (eff === "medium") med++; continue; }
     if (eff === "critical") crit++;
     else if (eff === "high") high++;
     else if (eff === "medium") med++;
@@ -24,7 +25,7 @@ export function verdictFor(findings: Finding[]): { verdict: Verdict; score: numb
   const unresolved = findings.some((f) => f.id === "UNRESOLVED_BASE");
   let verdict: Verdict;
   if (crit >= 1 || high >= 1) verdict = "Malicious"; // any confident critical/high finding is an asset-loss or asymmetric-control path
-  else if (med >= 2 || (unresolved && med >= 1)) verdict = "Uncertain";
+  else if (vuln >= 1 || med >= 2 || (unresolved && med >= 1)) verdict = "Uncertain"; // an exploitable bug puts funds at risk without proving intent
   else verdict = "Benign";
   const top = findings.filter((f) => f.severity !== "info").sort(bySeverity).slice(0, 3).map((f) => f.title);
   const summary = verdict === "Benign"

@@ -1,6 +1,7 @@
 import { Node, walk, collect, baseName, identifiers, isCallTo, calleeName, numberValue, isZeroAddress, line, endLine, snippet, isMsgSender, isTxOrigin, indexChain, isOwnerGetterCall, ownerGetters } from "./ast";
 import { Contract, Func, Assign, PAIR_NAME } from "./model";
 import { Finding, Severity, Location } from "./types";
+import { RULES2 } from "./rules2";
 
 export interface Ctx {
   file: string; // entry file being judged
@@ -598,6 +599,13 @@ export function ruleBalanceManipulation(ctx: Ctx): Finding[] {
           `${sn(ctx, w.node)} in ${f.name}()`,
           `A privileged function reduces another address's balance without an allowance or signature. Combined with a mint this becomes arbitrary confiscation.`));
       } else if (kind === "increase") {
+        const selfCredit = !!idx && (identifiers(idx).some((i) => c.ownerVars.has(i)) || isMsgSender(idx) || isOwnerGetterCall(idx));
+        if (selfCredit) {
+          out.push(mk(ctx, "BALANCE_MANIPULATION", `Owner credits their own balance in '${f.name}()' without minting`, "critical", 0.85, w.node, f,
+            `${sn(ctx, w.node)} in ${f.name}() [${f.privilegeReason}]`,
+            `A privileged function adds an arbitrary amount to the owner's own balance while totalSupply stays untouched. This is a disguised mint: the owner can dump tokens that never appear in the supply figure.`));
+          continue;
+        }
         out.push(mk(ctx, "BALANCE_MANIPULATION", "Balance increased under owner control without supply accounting", arbitrary ? "high" : "medium", 0.7, w.node, f,
           `${sn(ctx, w.node)} in ${f.name}()`,
           `Tokens are credited without touching total supply - a stealth mint that keeps totalSupply() looking unchanged.`));
@@ -1074,6 +1082,7 @@ export const RULES: ((ctx: Ctx) => Finding[])[] = [
   ruleExternalGateInTransfer,
   ruleHiddenWithdraw,
   ruleMisc,
+  ...RULES2,
 ];
 
 export function runRules(ctx: Ctx): Finding[] {
