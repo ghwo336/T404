@@ -734,6 +734,16 @@ export function ruleOwnership(ctx: Ctx): Finding[] {
       // renounce / transferOwnership by shape: privileged, value is address(0) or a parameter
       const literalAddr = w.value?.type === "NumberLiteral" || (w.value?.type === "FunctionCall" && w.value.arguments?.[0]?.type === "NumberLiteral" && !isZeroAddress(w.value));
       if (f.privileged && w.value && !literalAddr && (isZeroAddress(w.value) || identifiers(w.value).every((i) => f.params.includes(i)))) continue;
+      // two-step handoff (Ownable2Step.acceptOwnership / Compound Timelock.acceptAdmin): the caller must be the nominee
+      // and the nominee slot is only ever written by privileged code, so the handoff is a documented ownership transfer
+      if (w.value && (isMsgSender(w.value) || (w.value.type === "Identifier" && c.stateVars.has(w.value.name)))) {
+        const m = /msg\.sender vs (\w+)\)?$/.exec(f.privilegeReason);
+        const pend = m?.[1];
+        if (pend && (isMsgSender(w.value) || w.value.name === pend) && !/previous|_prev|backup|old/i.test(pend) && pend !== w.base && c.stateVars.has(pend) && /^address/.test(c.stateVars.get(pend)!.typeStr)) {
+          const writers = [...c.functions.values()].filter((g) => g !== f && !g.isConstructor && g.writes.some((x) => x.base === pend));
+          if (writers.length && writers.every((g) => g.privileged)) continue;
+        }
+      }
       out.push(mk(ctx, open ? "OPEN_OWNER_TAKEOVER" : "HIDDEN_OWNER_TRANSFER", open ? `Anyone can become owner via '${f.name}()'` : literalAddr ? `Owner silently set to a hard-coded address inside '${f.name}()'` : fromBackup ? `Ownership restored from backup in '${f.name}()'` : `Owner reassigned in unexpected function '${f.name}()'`, open || literalAddr ? "critical" : "high", literalAddr ? 0.9 : 0.8, w.node, f,
         `${sn(ctx, w.node)} in ${f.name}()${f.privileged ? ` [${f.privilegeReason}]` : ""}`,
         open ? `An unguarded public function writes the owner variable. Any address can seize control.` : fromBackup ? `This is the second half of a fake renounce: a stashed address is written back into the owner slot.` : `Ownership changes outside transferOwnership/renounceOwnership are hidden from anyone auditing the standard functions.`));
